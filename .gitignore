@@ -1,0 +1,11 @@
+.pytest_cache/
+__pycache__/
+.coverage
+.coverage.*
+.coverage.xml
+.coverage.json
+.coverage.yaml
+.coverage.yml
+.coverage.html
+.coverage.json.gz
+.coverage.json.bz2
