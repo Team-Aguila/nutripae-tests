@@ -98,7 +98,7 @@ async def test_purchase_order(client: httpx.AsyncClient, api_prefix: str, test_p
                 "product_id": product_id,
                 "quantity": 50.0,
                 "unit": "kg",
-                "unit_price": 2500.0
+                "price": 2500.0
             }
         ],
         "required_delivery_date": "2024-02-01"
@@ -226,6 +226,18 @@ def non_existent_product_id():
 
 @pytest.fixture
 def non_existent_inventory_id():
+    """Generate a valid but non-existent ObjectId for testing"""
+    return str(ObjectId())
+
+
+@pytest.fixture
+def non_existent_provider_id():
+    """Generate a valid but non-existent ObjectId for testing"""
+    return str(ObjectId())
+
+
+@pytest.fixture
+def non_existent_purchase_order_id():
     """Generate a valid but non-existent ObjectId for testing"""
     return str(ObjectId())
 
