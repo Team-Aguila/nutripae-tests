@@ -1,0 +1,512 @@
+{
+    "tests\\menus\\test_application_health_api.py::test_get_welcome_message_success": {
+        "description": "Verificar que el endpoint ra\u00edz responda correctamente en el servicio de men\u00fas",
+        "expected_result": "Status Code: 200, mensaje de bienvenida",
+        "module": "Men\u00fas",
+        "test_id": "MENUS-APP-001"
+    },
+    "tests\\menus\\test_application_health_api.py::test_get_general_health_status_success": {
+        "description": "Verificar que el endpoint de salud general responda correctamente",
+        "expected_result": "Status Code: 200, status healthy",
+        "module": "Men\u00fas",
+        "test_id": "MENUS-APP-002"
+    },
+    "tests\\menus\\test_application_health_api.py::test_get_database_health_success": {
+        "description": "Verificar que el endpoint de salud de la base de datos responda correctamente",
+        "expected_result": "Status Code: 200, database connected",
+        "module": "Men\u00fas",
+        "test_id": "MENUS-APP-003"
+    },
+    "tests\\menus\\test_application_health_api.py::test_get_database_health_when_database_down": {
+        "description": "Manejar verificaci\u00f3n de salud de base de datos cuando podr\u00eda estar desconectada",
+        "expected_result": "Status Code: 200, status healthy o unhealthy seg\u00fan estado",
+        "module": "Men\u00fas",
+        "test_id": "MENUS-APP-004"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_create_dish_with_non_existent_ingredient": {
+        "description": "Fallar al crear plato con ingrediente no existente",
+        "expected_result": "Status Code: 400, error de ingrediente no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "VAL-001"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_create_menu_cycle_with_non_existent_dish": {
+        "description": "Fallar al crear ciclo de men\u00fa con plato no existente",
+        "expected_result": "Status Code: 400, error de validaci\u00f3n cruzada",
+        "module": "Men\u00fas",
+        "test_id": "VAL-002"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_create_menu_schedule_with_non_existent_cycle": {
+        "description": "Fallar al crear horario de men\u00fa con ciclo no existente",
+        "expected_result": "Status Code: 400, error de ciclo no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "VAL-003"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_cannot_delete_ingredient_used_in_dish": {
+        "description": "No se puede eliminar ingrediente usado en plato",
+        "expected_result": "Status Code: 400, error de dependencia",
+        "module": "Men\u00fas",
+        "test_id": "VAL-004"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_cannot_delete_dish_used_in_menu_cycle": {
+        "description": "No se puede eliminar plato usado en ciclo de men\u00fa",
+        "expected_result": "Status Code: 400, error de dependencia",
+        "module": "Men\u00fas",
+        "test_id": "VAL-005"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_cannot_delete_menu_cycle_used_in_schedule": {
+        "description": "No se puede eliminar ciclo de men\u00fa usado en horario",
+        "expected_result": "Status Code: 400, error de dependencia",
+        "module": "Men\u00fas",
+        "test_id": "VAL-006"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_dish_recipe_must_have_ingredients": {
+        "description": "La receta del plato debe tener ingredientes",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-007"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_menu_cycle_duration_validation": {
+        "description": "Validaci\u00f3n de duraci\u00f3n de ciclo de men\u00fa",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-008"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_menu_schedule_dates_validation": {
+        "description": "Validaci\u00f3n de fechas de horario de men\u00fa",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-009"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_dish_must_have_compatible_meal_types": {
+        "description": "El plato debe tener tipos de comida compatibles",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-010"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_recipe_ingredient_quantity_must_be_positive": {
+        "description": "La cantidad de ingrediente en receta debe ser positiva",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-011"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_menu_cycle_daily_menu_day_must_be_positive": {
+        "description": "El d\u00eda del men\u00fa diario debe ser positivo",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-012"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_inactivating_ingredient_affects_dish_availability": {
+        "description": "Inactivar ingrediente afecta disponibilidad del plato",
+        "expected_result": "Plato marcado como no disponible",
+        "module": "Men\u00fas",
+        "test_id": "VAL-013"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_nutritional_analysis_reflects_recipe_changes": {
+        "description": "El an\u00e1lisis nutricional refleja cambios en la receta",
+        "expected_result": "Informaci\u00f3n nutricional actualizada",
+        "module": "Men\u00fas",
+        "test_id": "VAL-014"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_menu_cycle_consistency_across_days": {
+        "description": "Consistencia del ciclo de men\u00fa entre d\u00edas",
+        "expected_result": "Ciclo de men\u00fa consistente",
+        "module": "Men\u00fas",
+        "test_id": "VAL-015"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_unique_ingredient_names_enforced": {
+        "description": "Se aplica la unicidad de nombres de ingredientes",
+        "expected_result": "Status Code: 400, error de nombre duplicado",
+        "module": "Men\u00fas",
+        "test_id": "VAL-016"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_unique_dish_names_enforced": {
+        "description": "Se aplica la unicidad de nombres de platos",
+        "expected_result": "Status Code: 400, error de nombre duplicado",
+        "module": "Men\u00fas",
+        "test_id": "VAL-017"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_unique_menu_cycle_names_enforced": {
+        "description": "Se aplica la unicidad de nombres de ciclos de men\u00fa",
+        "expected_result": "Status Code: 400, error de nombre duplicado",
+        "module": "Men\u00fas",
+        "test_id": "VAL-018"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_ingredient_unit_validation": {
+        "description": "Validaci\u00f3n de unidad de ingrediente",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-019"
+    },
+    "tests\\menus\\test_data_validation_business_logic.py::test_recipe_unit_consistency_with_ingredient": {
+        "description": "Consistencia de unidad en receta con ingrediente",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "VAL-020"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_success": {
+        "description": "Crear un plato exitosamente",
+        "expected_result": "Status Code: 201, datos del plato creado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-001"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_missing_required_fields": {
+        "description": "Fallar al crear plato con campos requeridos faltantes",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "DISH-002"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_with_non_existent_ingredient": {
+        "description": "Fallar al crear plato con ingrediente no existente",
+        "expected_result": "Status Code: 400, error de ingrediente no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-003"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_empty_recipe_ingredients": {
+        "description": "Fallar al crear plato con receta sin ingredientes",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "DISH-004"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_duplicate_name": {
+        "description": "Fallar al crear plato con nombre duplicado",
+        "expected_result": "Status Code: 400, error de conflicto",
+        "module": "Men\u00fas",
+        "test_id": "DISH-005"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dish_by_id_success": {
+        "description": "Obtener plato por ID exitosamente",
+        "expected_result": "Status Code: 200, datos completos del plato",
+        "module": "Men\u00fas",
+        "test_id": "DISH-006"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dish_by_id_not_found": {
+        "description": "Fallar al obtener plato que no existe",
+        "expected_result": "Status Code: 404, plato no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-007"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dish_by_id_invalid_format": {
+        "description": "Fallar al obtener plato con ID en formato inv\u00e1lido",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "DISH-008"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dishes_list_default": {
+        "description": "Obtener lista de platos con configuraci\u00f3n por defecto",
+        "expected_result": "Status Code: 200, lista de platos",
+        "module": "Men\u00fas",
+        "test_id": "DISH-009"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dishes_list_with_name_filter": {
+        "description": "Obtener lista de platos filtrada por nombre",
+        "expected_result": "Status Code: 200, lista filtrada por nombre",
+        "module": "Men\u00fas",
+        "test_id": "DISH-010"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dishes_list_with_status_filter": {
+        "description": "Obtener lista de platos filtrada por estado",
+        "expected_result": "Status Code: 200, lista filtrada por estado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-011"
+    },
+    "tests\\menus\\test_dishes_api.py::test_get_dishes_list_with_meal_type_filter": {
+        "description": "Obtener lista de platos filtrada por tipo de comida",
+        "expected_result": "Status Code: 200, lista filtrada por tipo de comida",
+        "module": "Men\u00fas",
+        "test_id": "DISH-012"
+    },
+    "tests\\menus\\test_dishes_api.py::test_update_dish_name_success": {
+        "description": "Actualizar nombre de plato exitosamente",
+        "expected_result": "Status Code: 200, datos del plato actualizado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-013"
+    },
+    "tests\\menus\\test_dishes_api.py::test_update_dish_recipe_success": {
+        "description": "Actualizar receta de plato exitosamente",
+        "expected_result": "Status Code: 200, plato con receta actualizada",
+        "module": "Men\u00fas",
+        "test_id": "DISH-014"
+    },
+    "tests\\menus\\test_dishes_api.py::test_update_dish_not_found": {
+        "description": "Fallar al actualizar plato que no existe",
+        "expected_result": "Status Code: 404, plato no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "DISH-015"
+    },
+    "tests\\menus\\test_dishes_api.py::test_update_dish_duplicate_name": {
+        "description": "Fallar al actualizar plato con nombre duplicado",
+        "expected_result": "Status Code: 400, error de conflicto",
+        "module": "Men\u00fas",
+        "test_id": "DISH-016"
+    },
+    "tests\\menus\\test_dishes_api.py::test_create_dish_complex_recipe": {
+        "description": "Crear plato con receta compleja exitosamente",
+        "expected_result": "Status Code: 201, plato creado con receta m\u00faltiple",
+        "module": "Men\u00fas",
+        "test_id": "DISH-030"
+    },
+    "tests\\menus\\test_dishes_api.py::test_update_dish_add_ingredient_to_recipe": {
+        "description": "Actualizar plato agregando ingrediente a la receta exitosamente",
+        "expected_result": "Status Code: 200, receta actualizada con nuevo ingrediente",
+        "module": "Men\u00fas",
+        "test_id": "DISH-020"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_create_ingredient_success": {
+        "description": "Crear un ingrediente exitosamente",
+        "expected_result": "Status Code: 201, datos del ingrediente creado",
+        "module": "Men\u00fas",
+        "test_id": "ING-001"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_create_ingredient_missing_required_fields": {
+        "description": "Fallar al crear ingrediente con campos requeridos faltantes",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "ING-002"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_create_ingredient_invalid_status": {
+        "description": "Fallar al crear ingrediente con estado inv\u00e1lido",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "ING-003"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_create_ingredient_duplicate_name": {
+        "description": "Fallar al crear ingrediente con nombre duplicado",
+        "expected_result": "Status Code: 400, error de conflicto",
+        "module": "Men\u00fas",
+        "test_id": "ING-004"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_create_ingredient_empty_name": {
+        "description": "Fallar al crear ingrediente con nombre vac\u00edo",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "ING-005"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredient_by_id_success": {
+        "description": "Obtener ingrediente por ID exitosamente",
+        "expected_result": "Status Code: 200, datos completos del ingrediente",
+        "module": "Men\u00fas",
+        "test_id": "ING-006"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredient_by_id_not_found": {
+        "description": "Fallar al obtener ingrediente que no existe",
+        "expected_result": "Status Code: 404, ingrediente no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "ING-007"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredient_by_id_invalid_format": {
+        "description": "Fallar al obtener ingrediente con ID en formato inv\u00e1lido",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "ING-008"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredients_list_default_pagination": {
+        "description": "Obtener lista de ingredientes con paginaci\u00f3n por defecto",
+        "expected_result": "Status Code: 200, lista paginada de ingredientes",
+        "module": "Men\u00fas",
+        "test_id": "ING-009"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredients_list_with_pagination": {
+        "description": "Obtener lista de ingredientes con paginaci\u00f3n personalizada",
+        "expected_result": "Status Code: 200, lista con paginaci\u00f3n personalizada",
+        "module": "Men\u00fas",
+        "test_id": "ING-010"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredients_list_with_status_filter": {
+        "description": "Obtener lista de ingredientes filtrada por estado",
+        "expected_result": "Status Code: 200, lista filtrada por estado",
+        "module": "Men\u00fas",
+        "test_id": "ING-011"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredients_list_with_category_filter": {
+        "description": "Obtener lista de ingredientes filtrada por categor\u00eda",
+        "expected_result": "Status Code: 200, lista filtrada por categor\u00eda",
+        "module": "Men\u00fas",
+        "test_id": "ING-012"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredients_list_with_search": {
+        "description": "Obtener lista de ingredientes con b\u00fasqueda por nombre",
+        "expected_result": "Status Code: 200, lista filtrada por b\u00fasqueda",
+        "module": "Men\u00fas",
+        "test_id": "ING-013"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_active_ingredients_excludes_inactive": {
+        "description": "Obtener lista de ingredientes activos excluyendo inactivos",
+        "expected_result": "Status Code: 200, solo ingredientes activos",
+        "module": "Men\u00fas",
+        "test_id": "ING-014"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_update_ingredient_name_success": {
+        "description": "Actualizar nombre de ingrediente exitosamente",
+        "expected_result": "Status Code: 200, datos del ingrediente actualizado",
+        "module": "Men\u00fas",
+        "test_id": "ING-015"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_update_ingredient_multiple_fields_success": {
+        "description": "Actualizar m\u00faltiples campos de ingrediente exitosamente",
+        "expected_result": "Status Code: 200, ingrediente con m\u00faltiples campos actualizados",
+        "module": "Men\u00fas",
+        "test_id": "ING-016"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_update_ingredient_not_found": {
+        "description": "Fallar al actualizar ingrediente que no existe",
+        "expected_result": "Status Code: 404, ingrediente no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "ING-017"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_update_ingredient_duplicate_name": {
+        "description": "Fallar al actualizar ingrediente con nombre duplicado",
+        "expected_result": "Status Code: 400, error de conflicto",
+        "module": "Men\u00fas",
+        "test_id": "ING-018"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_inactivate_ingredient_success": {
+        "description": "Inactivar ingrediente exitosamente",
+        "expected_result": "Status Code: 200, ingrediente inactivado",
+        "module": "Men\u00fas",
+        "test_id": "ING-019"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_activate_ingredient_success": {
+        "description": "Activar ingrediente exitosamente",
+        "expected_result": "Status Code: 200, ingrediente activado",
+        "module": "Men\u00fas",
+        "test_id": "ING-020"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_delete_ingredient_success": {
+        "description": "Eliminar ingrediente exitosamente",
+        "expected_result": "Status Code: 200, confirmaci\u00f3n de eliminaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "ING-021"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_delete_ingredient_not_found": {
+        "description": "Fallar al eliminar ingrediente que no existe",
+        "expected_result": "Status Code: 404, ingrediente no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "ING-022"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredient_categories_success": {
+        "description": "Obtener categor\u00edas de ingredientes exitosamente",
+        "expected_result": "Status Code: 200, lista de categor\u00edas",
+        "module": "Men\u00fas",
+        "test_id": "ING-023"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_ingredient_statistics_success": {
+        "description": "Obtener estad\u00edsticas de ingredientes exitosamente",
+        "expected_result": "Status Code: 200, estad\u00edsticas de ingredientes",
+        "module": "Men\u00fas",
+        "test_id": "ING-024"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_check_name_uniqueness_available": {
+        "description": "Verificar disponibilidad de nombre de ingrediente",
+        "expected_result": "Status Code: 200, nombre disponible",
+        "module": "Men\u00fas",
+        "test_id": "ING-025"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_check_name_uniqueness_taken": {
+        "description": "Verificar que nombre de ingrediente est\u00e1 ocupado",
+        "expected_result": "Status Code: 200, nombre no disponible",
+        "module": "Men\u00fas",
+        "test_id": "ING-026"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_detailed_ingredient_success": {
+        "description": "Obtener ingrediente detallado exitosamente",
+        "expected_result": "Status Code: 200, informaci\u00f3n detallada del ingrediente",
+        "module": "Men\u00fas",
+        "test_id": "ING-027"
+    },
+    "tests\\menus\\test_ingredients_api.py::test_get_detailed_ingredients_list_success": {
+        "description": "Obtener lista detallada de ingredientes exitosamente",
+        "expected_result": "Status Code: 200, lista detallada de ingredientes",
+        "module": "Men\u00fas",
+        "test_id": "ING-028"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_create_menu_cycle_success": {
+        "description": "Crear un ciclo de men\u00fa exitosamente",
+        "expected_result": "Status Code: 201, datos del ciclo de men\u00fa creado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-001"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_create_menu_cycle_missing_required_fields": {
+        "description": "Fallar al crear ciclo de men\u00fa con campos requeridos faltantes",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-002"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_create_menu_cycle_invalid_duration": {
+        "description": "Fallar al crear ciclo de men\u00fa con duraci\u00f3n inv\u00e1lida",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-003"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_create_menu_cycle_with_non_existent_dish": {
+        "description": "Fallar al crear ciclo de men\u00fa con plato no existente",
+        "expected_result": "Status Code: 400, error de plato no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-004"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_create_menu_cycle_duplicate_name": {
+        "description": "Fallar al crear ciclo de men\u00fa con nombre duplicado",
+        "expected_result": "Status Code: 400, error de conflicto",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-005"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycle_by_id_success": {
+        "description": "Obtener ciclo de men\u00fa por ID exitosamente",
+        "expected_result": "Status Code: 200, datos completos del ciclo de men\u00fa",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-006"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycle_by_id_not_found": {
+        "description": "Fallar al obtener ciclo de men\u00fa que no existe",
+        "expected_result": "Status Code: 404, ciclo de men\u00fa no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-007"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycle_by_id_invalid_format": {
+        "description": "Fallar al obtener ciclo de men\u00fa con ID en formato inv\u00e1lido",
+        "expected_result": "Status Code: 422, error de validaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-008"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycles_list_default": {
+        "description": "Obtener lista de ciclos de men\u00fa con configuraci\u00f3n por defecto",
+        "expected_result": "Status Code: 200, lista de ciclos de men\u00fa",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-009"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycles_list_with_status_filter": {
+        "description": "Obtener lista de ciclos de men\u00fa filtrada por estado",
+        "expected_result": "Status Code: 200, lista filtrada por estado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-010"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_get_menu_cycles_list_with_search": {
+        "description": "Obtener lista de ciclos de men\u00fa con b\u00fasqueda por nombre",
+        "expected_result": "Status Code: 200, lista filtrada por b\u00fasqueda",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-011"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_update_menu_cycle_name_success": {
+        "description": "Actualizar nombre de ciclo de men\u00fa exitosamente",
+        "expected_result": "Status Code: 200, datos del ciclo actualizado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-012"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_update_menu_cycle_add_daily_menu": {
+        "description": "Actualizar ciclo de men\u00fa agregando men\u00fa diario exitosamente",
+        "expected_result": "Status Code: 200, ciclo actualizado con nuevo men\u00fa diario",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-013"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_update_menu_cycle_not_found": {
+        "description": "Fallar al actualizar ciclo de men\u00fa que no existe",
+        "expected_result": "Status Code: 404, ciclo de men\u00fa no encontrado",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-014"
+    },
+    "tests\\menus\\test_menu_cycles_api.py::test_delete_menu_cycle_success": {
+        "description": "Eliminar ciclo de men\u00fa exitosamente",
+        "expected_result": "Status Code: 200, confirmaci\u00f3n de eliminaci\u00f3n",
+        "module": "Men\u00fas",
+        "test_id": "CYCLE-015"
+    }
+}

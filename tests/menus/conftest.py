@@ -32,22 +32,16 @@ def api_prefix():
 @pytest.fixture
 async def test_ingredient(client: httpx.AsyncClient, api_prefix: str):
     """Create a test ingredient and clean up after test"""
+    # Use unique name to avoid collisions
+    import uuid
+    from datetime import datetime
+    unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+    
     ingredient_data = {
-        "name": "Test Ingredient Integration",
-        "base_unit_of_measure": "kg",
-        "status": "active",
-        "description": "Test ingredient for integration tests",
-        "category": "test_category",
-        "nutritional_info": {
-            "per_100g": {
-                "calories": 300.0,
-                "protein": 8.0,
-                "carbohydrates": 60.0,
-                "fat": 2.0,
-                "fiber": 3.0,
-                "sodium": 10.0
-            }
-        }
+        "name": f"Test Ingredient Integration-{unique_suffix}",
+        "base_unit_of_measure": "kg"
+        # Only using required fields - status defaults to "active"
+        # Removed optional fields: description, category, nutritional_info
     }
     
     # Create ingredient
@@ -57,9 +51,9 @@ async def test_ingredient(client: httpx.AsyncClient, api_prefix: str):
     
     yield ingredient
     
-    # Cleanup: Delete ingredient
+    # Cleanup: DELETE endpoints are implemented according to our tests
     try:
-        ingredient_id = ingredient.get("_id")
+        ingredient_id = ingredient.get("_id") or ingredient.get("id")
         if ingredient_id:
             await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
     except Exception:
@@ -69,22 +63,16 @@ async def test_ingredient(client: httpx.AsyncClient, api_prefix: str):
 @pytest.fixture
 async def test_ingredient_2(client: httpx.AsyncClient, api_prefix: str):
     """Create a second test ingredient for complex recipes"""
+    # Use unique name to avoid collisions
+    import uuid
+    from datetime import datetime
+    unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+    
     ingredient_data = {
-        "name": "Test Ingredient 2 Integration",
-        "base_unit_of_measure": "g",
-        "status": "active",
-        "description": "Second test ingredient for integration tests",
-        "category": "test_category_2",
-        "nutritional_info": {
-            "per_100g": {
-                "calories": 150.0,
-                "protein": 20.0,
-                "carbohydrates": 5.0,
-                "fat": 8.0,
-                "fiber": 1.0,
-                "sodium": 200.0
-            }
-        }
+        "name": f"Test Ingredient 2 Integration-{unique_suffix}",
+        "base_unit_of_measure": "g"
+        # Only using required fields - status defaults to "active"  
+        # Removed optional fields: description, category, nutritional_info
     }
     
     # Create ingredient
@@ -94,9 +82,9 @@ async def test_ingredient_2(client: httpx.AsyncClient, api_prefix: str):
     
     yield ingredient
     
-    # Cleanup: Delete ingredient
+    # Cleanup: DELETE endpoints are implemented according to our tests
     try:
-        ingredient_id = ingredient.get("_id")
+        ingredient_id = ingredient.get("_id") or ingredient.get("id")
         if ingredient_id:
             await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
     except Exception:
@@ -106,14 +94,17 @@ async def test_ingredient_2(client: httpx.AsyncClient, api_prefix: str):
 @pytest.fixture
 async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient, test_ingredient_2):
     """Create a test dish and clean up after test"""
+    import uuid
+    from datetime import datetime
+    
     ingredient_id_1 = test_ingredient.get("_id")
     ingredient_id_2 = test_ingredient_2.get("_id")
     
+    # Use unique name to avoid collisions
+    unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
     dish_data = {
-        "name": "Test Dish Integration",
-        "description": "Test dish for integration tests",
-        "status": "active",
-        "compatible_meal_types": ["almuerzo"],  # Use Spanish values
+        "name": f"Test Dish Integration-{unique_suffix}",
+        "compatible_meal_types": ["almuerzo"],  # Use valid Spanish values
         "recipe": {
             "ingredients": [
                 {
@@ -127,17 +118,9 @@ async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient,
                     "unit": "g"
                 }
             ]
-        },
-        "nutritional_info": {
-            "calories": 350.0,
-            "protein": 15.0,
-            "carbohydrates": 45.0,
-            "fat": 8.0,
-            "fiber": 2.0,
-            "sodium": 120.0,
-            "photo_url": "https://example.com/test-dish.jpg"
-        },
-        "dish_type": "protein"
+        }
+        # Only using required fields - status defaults to "active"
+        # Removed optional fields: description, nutritional_info, dish_type
     }
     
     # Create dish
@@ -147,9 +130,9 @@ async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient,
     
     yield dish
     
-    # Cleanup: Delete dish
+    # Cleanup: Try to delete the created dish
     try:
-        dish_id = dish.get("_id")
+        dish_id = dish.get("_id") or dish.get("id")
         if dish_id:
             await client.delete(f"{api_prefix}/dishes/{dish_id}")
     except Exception:
@@ -159,10 +142,15 @@ async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient,
 @pytest.fixture
 async def test_menu_cycle(client: httpx.AsyncClient, api_prefix: str, test_dish):
     """Create a test menu cycle and clean up after test"""
+    import uuid
+    from datetime import datetime
+    
     dish_id = test_dish.get("_id")
     
+    # Use unique name to avoid collisions
+    unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
     cycle_data = {
-        "name": "Test Menu Cycle Integration",
+        "name": f"Test Menu Cycle Integration-{unique_suffix}",
         "description": "Test menu cycle for integration tests",
         "status": "active",
         "duration_days": 7,
@@ -190,7 +178,7 @@ async def test_menu_cycle(client: httpx.AsyncClient, api_prefix: str, test_dish)
         
         # Cleanup: Delete menu cycle
         try:
-            cycle_id = cycle.get("_id")
+            cycle_id = cycle.get("_id") or cycle.get("id")
             if cycle_id:
                 await client.delete(f"{api_prefix}/menu-cycles/{cycle_id}")
         except Exception:
