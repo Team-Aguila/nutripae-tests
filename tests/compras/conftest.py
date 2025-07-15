@@ -10,6 +10,23 @@ from bson import ObjectId
 from .config import TestConfig
 
 
+async def get_auth_token() -> str:
+    """Get authentication token from the auth API"""
+    auth_url = TestConfig.get_auth_url(TestConfig.AUTH_LOGIN_ENDPOINT)
+    auth_data = {
+        "email": TestConfig.AUTH_EMAIL,
+        "password": TestConfig.AUTH_PASSWORD
+    }
+    
+    async with httpx.AsyncClient(timeout=TestConfig.TIMEOUT) as auth_client:
+        response = await auth_client.post(auth_url, json=auth_data)
+        if response.status_code == 200:
+            auth_response = response.json()
+            return auth_response.get("access_token")
+        else:
+            raise Exception(f"Authentication failed: {response.status_code} - {response.text}")
+
+
 @pytest.fixture
 async def client(auth_token: str):
     """HTTP client fixture for making API requests"""
