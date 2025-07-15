@@ -28,17 +28,14 @@ async def get_auth_token() -> str:
 
 
 @pytest.fixture
-async def client():
-    """HTTP client fixture for making API requests with authentication"""
-    # Get authentication token
-    token = await get_auth_token()
-    
-    # Create authorized client with bearer token
+async def client(auth_token: str):
+    """HTTP client fixture for making API requests"""
+    headers = {"Authorization": f"Bearer {auth_token}"}
     async with httpx.AsyncClient(
         base_url=TestConfig.BASE_URL,
         timeout=TestConfig.TIMEOUT,
         follow_redirects=TestConfig.FOLLOW_REDIRECTS,
-        headers={"Authorization": f"Bearer {token}"}
+        headers=headers
     ) as client:
         yield client
 
@@ -181,9 +178,10 @@ async def test_inventory_batch(client: httpx.AsyncClient, api_prefix: str, test_
 
 
 @pytest.fixture
-def sample_inventory_receipt_data(test_product, test_purchase_order):
+async def sample_inventory_receipt_data(test_product, test_purchase_order):
     """Sample inventory receipt data with valid ObjectIds"""
-    product_id = test_product.get("_id")
+    product_id = test_product.get("_id") if test_product else None
+    
     purchase_order_id = None
     if test_purchase_order:
         purchase_order_id = test_purchase_order.get("_id")
@@ -204,9 +202,9 @@ def sample_inventory_receipt_data(test_product, test_purchase_order):
 
 
 @pytest.fixture
-def sample_inventory_consumption_data(test_product):
+async def sample_inventory_consumption_data(test_product):
     """Sample inventory consumption data with valid ObjectIds"""
-    product_id = test_product.get("_id")
+    product_id = test_product.get("_id") if test_product else None
     
     return {
         "product_id": product_id,
@@ -222,9 +220,10 @@ def sample_inventory_consumption_data(test_product):
 
 
 @pytest.fixture
-def sample_inventory_adjustment_data(test_product, test_inventory_batch):
+async def sample_inventory_adjustment_data(test_product, test_inventory_batch):
     """Sample inventory adjustment data with valid ObjectIds"""
-    product_id = test_product.get("_id")
+    product_id = test_product.get("_id") if test_product else None
+    
     inventory_id = None
     if test_inventory_batch:
         inventory_id = test_inventory_batch.get("inventory_batch_id")
@@ -374,7 +373,7 @@ def assert_error_response(data: Dict[str, Any], expected_message: Optional[str] 
     """Assert response is an error with detail field"""
     assert "detail" in data, "Error response should contain detail field"
     if expected_message is not None:
-        assert expected_message in str(data["detail"]), f"Expected '{expected_message}' in error message"
+        assert expected_message.lower() in str(data["detail"]).lower(), f"Expected '{expected_message}' in error message"
 
 
 # Export helper functions

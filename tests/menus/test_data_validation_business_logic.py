@@ -7,11 +7,18 @@ import httpx
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
+from ..test_metadata import add_test_info
 
 
 class TestCrossEntityValidation:
-    """Test suite for Cross-Entity Validation"""
+    """Test suite for cross-entity validation and business logic"""
     
+    @add_test_info(
+        description="Fallar al crear plato con ingrediente no existente",
+        expected_result="Status Code: 400, error de ingrediente no encontrado",
+        module="Menús",
+        test_id="VAL-001"
+    )
     async def test_create_dish_with_non_existent_ingredient(self, client: httpx.AsyncClient, api_prefix: str, non_existent_ingredient_id):
         """VAL-001: Fail to create dish with non-existent ingredient"""
         dish_data = {
@@ -34,6 +41,12 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al crear ciclo de menú con plato no existente",
+        expected_result="Status Code: 400, error de plato no encontrado",
+        module="Menús",
+        test_id="VAL-002"
+    )
     async def test_create_menu_cycle_with_non_existent_dish(self, client: httpx.AsyncClient, api_prefix: str, non_existent_dish_id):
         """VAL-002: Fail to create menu cycle with non-existent dish"""
         cycle_data = {
@@ -55,8 +68,14 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al crear horario de menú con ciclo no existente",
+        expected_result="Status Code: 400, error de ciclo no encontrado",
+        module="Menús",
+        test_id="VAL-003"
+    )
     async def test_create_menu_schedule_with_non_existent_cycle(self, client: httpx.AsyncClient, api_prefix: str, non_existent_menu_cycle_id):
-        """VAL-003: Fail to create menu schedule with non-existent menu cycle"""
+        """VAL-003: Fail to create menu schedule with non-existent cycle"""
         assignment_data = {
             "menu_cycle_id": non_existent_menu_cycle_id,
             "campus_ids": ["test_campus_1"],
@@ -71,8 +90,14 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="No se puede eliminar ingrediente usado en plato",
+        expected_result="Status Code: 400, error de dependencia",
+        module="Menús",
+        test_id="VAL-004"
+    )
     async def test_cannot_delete_ingredient_used_in_dish(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient, test_dish):
-        """VAL-004: Fail to delete ingredient that is used in existing dishes"""
+        """VAL-004: Cannot delete ingredient that is used in a dish"""
         ingredient_id = test_ingredient.get("id")
         
         # Try to delete the ingredient that's used in the test dish
@@ -83,8 +108,14 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "referenced")
 
+    @add_test_info(
+        description="No se puede eliminar plato usado en ciclo de menú",
+        expected_result="Status Code: 400, error de dependencia",
+        module="Menús",
+        test_id="VAL-005"
+    )
     async def test_cannot_delete_dish_used_in_menu_cycle(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_menu_cycle):
-        """VAL-005: Fail to delete dish that is used in existing menu cycles"""
+        """VAL-005: Cannot delete dish that is used in a menu cycle"""
         if not test_menu_cycle:
             pytest.skip("Test menu cycle not available")
         
@@ -98,8 +129,14 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "referenced")
 
+    @add_test_info(
+        description="No se puede eliminar ciclo de menú usado en horario",
+        expected_result="Status Code: 400, error de dependencia",
+        module="Menús",
+        test_id="VAL-006"
+    )
     async def test_cannot_delete_menu_cycle_used_in_schedule(self, client: httpx.AsyncClient, api_prefix: str, test_menu_cycle, test_menu_schedule):
-        """VAL-006: Fail to delete menu cycle that is used in existing schedules"""
+        """VAL-006: Cannot delete menu cycle that is used in a schedule"""
         if not test_menu_cycle or not test_menu_schedule:
             pytest.skip("Test menu cycle or schedule not available")
         
@@ -115,10 +152,16 @@ class TestCrossEntityValidation:
 
 
 class TestBusinessLogicValidation:
-    """Test suite for Business Logic Validation"""
+    """Test suite for specific business logic validation"""
     
+    @add_test_info(
+        description="La receta del plato debe tener ingredientes",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-007"
+    )
     async def test_dish_recipe_must_have_ingredients(self, client: httpx.AsyncClient, api_prefix: str):
-        """VAL-007: Dish recipe must contain at least one ingredient"""
+        """VAL-007: Dish recipe must have ingredients"""
         dish_data = {
             "name": "Empty Recipe Dish VAL-007",
             "compatible_meal_types": ["almuerzo"],
@@ -135,8 +178,14 @@ class TestBusinessLogicValidation:
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="Validación de duración de ciclo de menú",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-008"
+    )
     async def test_menu_cycle_duration_validation(self, client: httpx.AsyncClient, api_prefix: str):
-        """VAL-008: Menu cycle duration must be positive"""
+        """VAL-008: Menu cycle duration validation"""
         cycle_data = {
             "name": "Invalid Duration Cycle VAL-008",
             "duration_days": -1,  # Negative duration
@@ -149,8 +198,14 @@ class TestBusinessLogicValidation:
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="Validación de fechas de horario de menú",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-009"
+    )
     async def test_menu_schedule_dates_validation(self, client: httpx.AsyncClient, api_prefix: str, test_menu_cycle):
-        """VAL-009: Menu schedule end date must be after start date"""
+        """VAL-009: Menu schedule dates validation"""
         if not test_menu_cycle:
             pytest.skip("Test menu cycle not available")
         
@@ -170,8 +225,14 @@ class TestBusinessLogicValidation:
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="El plato debe tener tipos de comida compatibles",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-010"
+    )
     async def test_dish_must_have_compatible_meal_types(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
-        """VAL-010: Dish must have at least one compatible meal type"""
+        """VAL-010: Dish must have compatible meal types"""
         ingredient_id = test_ingredient.get("id")
         
         dish_data = {
@@ -194,6 +255,12 @@ class TestBusinessLogicValidation:
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="La cantidad de ingrediente en receta debe ser positiva",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-011"
+    )
     async def test_recipe_ingredient_quantity_must_be_positive(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
         """VAL-011: Recipe ingredient quantity must be positive"""
         ingredient_id = test_ingredient.get("id")
@@ -218,6 +285,12 @@ class TestBusinessLogicValidation:
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="El día del menú diario debe ser positivo",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-012"
+    )
     async def test_menu_cycle_daily_menu_day_must_be_positive(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """VAL-012: Menu cycle daily menu day must be positive"""
         dish_id = test_dish.get("id")
@@ -243,10 +316,16 @@ class TestBusinessLogicValidation:
 
 
 class TestDataConsistency:
-    """Test suite for Data Consistency"""
+    """Test suite for data consistency and integrity"""
     
+    @add_test_info(
+        description="Inactivar ingrediente afecta disponibilidad del plato",
+        expected_result="Plato marcado como no disponible",
+        module="Menús",
+        test_id="VAL-013"
+    )
     async def test_inactivating_ingredient_affects_dish_availability(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
-        """VAL-013: Inactivating ingredient should affect dishes that use it"""
+        """VAL-013: Inactivating ingredient affects dish availability"""
         ingredient_id = test_ingredient.get("id")
         
         # Create a dish with this ingredient
@@ -300,8 +379,14 @@ class TestDataConsistency:
         # Cleanup
         await client.delete(f"{api_prefix}/dishes/{dish_id}")
 
+    @add_test_info(
+        description="El análisis nutricional refleja cambios en la receta",
+        expected_result="Información nutricional actualizada",
+        module="Menús",
+        test_id="VAL-014"
+    )
     async def test_nutritional_analysis_reflects_recipe_changes(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
-        """VAL-014: Nutritional analysis should reflect recipe changes"""
+        """VAL-014: Nutritional analysis reflects recipe changes"""
         dish_id = test_dish.get("id")
         
         # Get initial dish with nutritional info
@@ -359,8 +444,14 @@ class TestDataConsistency:
             # If we can't create a test ingredient, skip this test
             pytest.skip("Could not create test ingredient for recipe modification")
 
+    @add_test_info(
+        description="Consistencia del ciclo de menú entre días",
+        expected_result="Ciclo de menú consistente",
+        module="Menús",
+        test_id="VAL-015"
+    )
     async def test_menu_cycle_consistency_across_days(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
-        """VAL-015: Menu cycle should maintain consistency across days"""
+        """VAL-015: Menu cycle consistency across days"""
         dish_id = test_dish.get("id")
         
         cycle_data = {
@@ -400,10 +491,16 @@ class TestDataConsistency:
 
 
 class TestConstraintValidation:
-    """Test suite for Constraint Validation"""
+    """Test suite for database and model constraints"""
     
+    @add_test_info(
+        description="Se aplica la unicidad de nombres de ingredientes",
+        expected_result="Status Code: 400, error de nombre duplicado",
+        module="Menús",
+        test_id="VAL-016"
+    )
     async def test_unique_ingredient_names_enforced(self, client: httpx.AsyncClient, api_prefix: str):
-        """VAL-016: Ingredient names must be unique"""
+        """VAL-016: Unique ingredient names enforced"""
         ingredient_data = {
             "name": "Unique Name Test VAL-016",
             "base_unit_of_measure": "kg"
@@ -424,8 +521,14 @@ class TestConstraintValidation:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient1_id}")
 
+    @add_test_info(
+        description="Se aplica la unicidad de nombres de platos",
+        expected_result="Status Code: 400, error de nombre duplicado",
+        module="Menús",
+        test_id="VAL-017"
+    )
     async def test_unique_dish_names_enforced(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
-        """VAL-017: Dish names must be unique"""
+        """VAL-017: Unique dish names enforced"""
         ingredient_id = test_ingredient.get("id")
         
         dish_data = {
@@ -457,8 +560,14 @@ class TestConstraintValidation:
         # Cleanup
         await client.delete(f"{api_prefix}/dishes/{dish1_id}")
 
+    @add_test_info(
+        description="Se aplica la unicidad de nombres de ciclos de menú",
+        expected_result="Status Code: 400, error de nombre duplicado",
+        module="Menús",
+        test_id="VAL-018"
+    )
     async def test_unique_menu_cycle_names_enforced(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
-        """VAL-018: Menu cycle names must be unique"""
+        """VAL-018: Unique menu cycle names enforced"""
         dish_id = test_dish.get("id")
         
         cycle_data = {
@@ -490,8 +599,14 @@ class TestConstraintValidation:
         # Cleanup
         await client.delete(f"{api_prefix}/menu-cycles/{cycle1_id}")
 
+    @add_test_info(
+        description="Validación de unidad de ingrediente",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-019"
+    )
     async def test_ingredient_unit_validation(self, client: httpx.AsyncClient, api_prefix: str):
-        """VAL-019: Ingredient unit of measure must be valid"""
+        """VAL-019: Ingredient unit validation"""
         ingredient_data = {
             "name": "Invalid Unit Test VAL-019",
             "base_unit_of_measure": "invalid_unit"
@@ -509,8 +624,14 @@ class TestConstraintValidation:
             ingredient_id = response.json()["id"]
             await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Consistencia de unidad en receta con ingrediente",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="VAL-020"
+    )
     async def test_recipe_unit_consistency_with_ingredient(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
-        """VAL-020: Recipe ingredient units should be compatible with base ingredient units"""
+        """VAL-020: Recipe unit consistency with ingredient"""
         ingredient_id = test_ingredient.get("id")
         ingredient_unit = test_ingredient.get("base_unit_of_measure", "kg")
         

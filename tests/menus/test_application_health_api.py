@@ -7,11 +7,18 @@ import httpx
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
+from ..test_metadata import add_test_info
 
 
 class TestApplicationRootEndpoint:
     """Test suite for GET / (root) endpoint"""
     
+    @add_test_info(
+        description="Verificar que el endpoint raíz responda correctamente en el servicio de menús",
+        expected_result="Status Code: 200, mensaje de bienvenida",
+        module="Menús",
+        test_id="MENUS-APP-001"
+    )
     async def test_get_welcome_message_success(self, client: httpx.AsyncClient):
         """MENUS-APP-001: Successfully get welcome message"""
         # Root endpoint is at the base URL, not under API prefix
@@ -28,6 +35,12 @@ class TestApplicationRootEndpoint:
 class TestApplicationHealthEndpoints:
     """Test suite for health check endpoints"""
     
+    @add_test_info(
+        description="Verificar que el endpoint de salud general responda correctamente",
+        expected_result="Status Code: 200, status healthy",
+        module="Menús",
+        test_id="MENUS-APP-002"
+    )
     async def test_get_general_health_status_success(self, client: httpx.AsyncClient):
         """MENUS-APP-002: Successfully get health status"""
         # Health endpoint is at the root level, not under API prefix
@@ -42,6 +55,12 @@ class TestApplicationHealthEndpoints:
         assert "service" in data
         assert data["service"] == "PAE Menus API"
     
+    @add_test_info(
+        description="Verificar que el endpoint de salud de la base de datos responda correctamente",
+        expected_result="Status Code: 200, database connected",
+        module="Menús",
+        test_id="MENUS-APP-003"
+    )
     async def test_get_database_health_success(self, client: httpx.AsyncClient):
         """MENUS-APP-003: Successfully check database health"""
         # Database health endpoint is at the root level, not under API prefix
@@ -56,6 +75,12 @@ class TestApplicationHealthEndpoints:
         assert "database" in data
         assert data["database"] == "connected"
     
+    @add_test_info(
+        description="Manejar verificación de salud de base de datos cuando podría estar desconectada",
+        expected_result="Status Code: 200, status healthy o unhealthy según estado",
+        module="Menús",
+        test_id="MENUS-APP-004"
+    )
     async def test_get_database_health_when_database_down(self, client: httpx.AsyncClient):
         """MENUS-APP-004: Handle database health check when database might be down"""
         # Database health endpoint is at the root level, not under API prefix

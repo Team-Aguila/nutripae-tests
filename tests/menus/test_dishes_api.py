@@ -7,6 +7,7 @@ import httpx
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response, assert_dish_response
+from ..test_metadata import add_test_info
 
 
 class TestDishesAPI:
@@ -14,6 +15,12 @@ class TestDishesAPI:
     
     # CREATE DISH TESTS
     
+    @add_test_info(
+        description="Crear un plato exitosamente con receta",
+        expected_result="Status Code: 201, datos del plato creado",
+        module="Menús",
+        test_id="DISH-001"
+    )
     async def test_create_dish_success(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient, test_ingredient_2):
         """DISH-001: Successfully create a new dish with recipe"""
         ingredient_id_1 = test_ingredient.get("id")
@@ -62,6 +69,12 @@ class TestDishesAPI:
         dish_id = data["id"]
         await client.delete(f"{api_prefix}/dishes/{dish_id}")
 
+    @add_test_info(
+        description="Fallar al crear plato con campos requeridos faltantes",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="DISH-002"
+    )
     async def test_create_dish_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str):
         """DISH-002: Fail to create dish with missing required fields"""
         invalid_data = {
@@ -81,8 +94,14 @@ class TestDishesAPI:
         assert any("compatible_meal_types" in str(error) for error in data["detail"])
         assert any("recipe" in str(error) for error in data["detail"])
 
+    @add_test_info(
+        description="Fallar al crear plato con ingrediente no existente",
+        expected_result="Status Code: 400, error de ingrediente no encontrado",
+        module="Menús",
+        test_id="DISH-003"
+    )
     async def test_create_dish_with_non_existent_ingredient(self, client: httpx.AsyncClient, api_prefix: str, non_existent_ingredient_id):
-        """DISH-003: Fail to create dish with non-existent ingredient in recipe"""
+        """DISH-003: Fail to create dish with non-existent ingredient"""
         dish_data = {
             "name": "Non-existent Ingredient Test DISH-003",
             "compatible_meal_types": ["almuerzo"],
@@ -103,6 +122,12 @@ class TestDishesAPI:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al crear plato con receta sin ingredientes",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="DISH-004"
+    )
     async def test_create_dish_empty_recipe_ingredients(self, client: httpx.AsyncClient, api_prefix: str):
         """DISH-004: Fail to create dish with empty recipe ingredients"""
         dish_data = {
@@ -120,6 +145,12 @@ class TestDishesAPI:
         assert_error_response(data)
         # Should indicate that recipe must have at least one ingredient
 
+    @add_test_info(
+        description="Fallar al crear plato con nombre duplicado",
+        expected_result="Status Code: 400, error de conflicto",
+        module="Menús",
+        test_id="DISH-005"
+    )
     async def test_create_dish_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
         """DISH-005: Fail to create dish with duplicate name"""
         ingredient_id = test_ingredient.get("id")
@@ -155,6 +186,12 @@ class TestDishesAPI:
 
     # READ DISH TESTS
     
+    @add_test_info(
+        description="Obtener plato por ID exitosamente",
+        expected_result="Status Code: 200, datos completos del plato",
+        module="Menús",
+        test_id="DISH-006"
+    )
     async def test_get_dish_by_id_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """DISH-006: Successfully get dish by ID"""
         dish_id = test_dish.get("id")
@@ -169,14 +206,26 @@ class TestDishesAPI:
         assert "ingredients" in data["recipe"]
         assert len(data["recipe"]["ingredients"]) > 0
 
+    @add_test_info(
+        description="Fallar al obtener plato que no existe",
+        expected_result="Status Code: 404, plato no encontrado",
+        module="Menús",
+        test_id="DISH-007"
+    )
     async def test_get_dish_by_id_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_dish_id):
-        """DISH-007: Fail to get dish with non-existent ID"""
+        """DISH-007: Fail to get dish that doesn't exist"""
         response = await client.get(f"{api_prefix}/dishes/{non_existent_dish_id}")
         
         assert response.status_code == 404
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al obtener plato con ID en formato inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="DISH-008"
+    )
     async def test_get_dish_by_id_invalid_format(self, client: httpx.AsyncClient, api_prefix: str):
         """DISH-008: Fail to get dish with invalid ID format"""
         invalid_id = "invalid-id-format"
@@ -188,8 +237,14 @@ class TestDishesAPI:
 
     # LIST DISHES TESTS
     
+    @add_test_info(
+        description="Obtener lista de platos con configuración por defecto",
+        expected_result="Status Code: 200, lista de platos",
+        module="Menús",
+        test_id="DISH-009"
+    )
     async def test_get_dishes_list_default(self, client: httpx.AsyncClient, api_prefix: str):
-        """DISH-009: Successfully get dishes list with default parameters"""
+        """DISH-009: Successfully get dishes list with default settings"""
         response = await client.get(f"{api_prefix}/dishes/")
         
         assert response.status_code == 200
@@ -203,6 +258,12 @@ class TestDishesAPI:
             assert "compatible_meal_types" in dish
             assert "recipe" in dish
 
+    @add_test_info(
+        description="Obtener lista de platos filtrada por nombre",
+        expected_result="Status Code: 200, lista filtrada por nombre",
+        module="Menús",
+        test_id="DISH-010"
+    )
     async def test_get_dishes_list_with_name_filter(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """DISH-010: Successfully get dishes list filtered by name"""
         dish_name = test_dish["name"]
@@ -218,6 +279,12 @@ class TestDishesAPI:
         found = any(dish["id"] == test_dish["id"] for dish in data)
         assert found
 
+    @add_test_info(
+        description="Obtener lista de platos filtrada por estado",
+        expected_result="Status Code: 200, lista filtrada por estado",
+        module="Menús",
+        test_id="DISH-011"
+    )
     async def test_get_dishes_list_with_status_filter(self, client: httpx.AsyncClient, api_prefix: str):
         """DISH-011: Successfully get dishes list filtered by status"""
         params = {"status": "active"}
@@ -230,6 +297,12 @@ class TestDishesAPI:
         for dish in data:
             assert dish["status"] == "active"
 
+    @add_test_info(
+        description="Obtener lista de platos filtrada por tipo de comida",
+        expected_result="Status Code: 200, lista filtrada por tipo de comida",
+        module="Menús",
+        test_id="DISH-012"
+    )
     async def test_get_dishes_list_with_meal_type_filter(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """DISH-012: Successfully get dishes list filtered by meal type"""
         meal_type = test_dish["compatible_meal_types"][0]
@@ -246,6 +319,12 @@ class TestDishesAPI:
 
     # UPDATE DISH TESTS
     
+    @add_test_info(
+        description="Actualizar nombre de plato exitosamente",
+        expected_result="Status Code: 200, datos del plato actualizado",
+        module="Menús",
+        test_id="DISH-013"
+    )
     async def test_update_dish_name_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """DISH-013: Successfully update dish name"""
         dish_id = test_dish.get("id")
@@ -259,6 +338,12 @@ class TestDishesAPI:
         assert data["name"] == f"Updated {original_name}"
         assert data["id"] == dish_id
 
+    @add_test_info(
+        description="Actualizar receta de plato exitosamente",
+        expected_result="Status Code: 200, plato con receta actualizada",
+        module="Menús",
+        test_id="DISH-014"
+    )
     async def test_update_dish_recipe_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_ingredient):
         """DISH-014: Successfully update dish recipe"""
         dish_id = test_dish.get("id")
@@ -282,8 +367,14 @@ class TestDishesAPI:
         assert len(data["recipe"]["ingredients"]) == 1
         assert data["recipe"]["ingredients"][0]["quantity"] == 300.0
 
+    @add_test_info(
+        description="Fallar al actualizar plato que no existe",
+        expected_result="Status Code: 404, plato no encontrado",
+        module="Menús",
+        test_id="DISH-015"
+    )
     async def test_update_dish_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_dish_id):
-        """DISH-015: Fail to update non-existent dish"""
+        """DISH-015: Fail to update dish that doesn't exist"""
         update_data = {"name": "Updated Name"}
         response = await client.put(f"{api_prefix}/dishes/{non_existent_dish_id}", json=update_data)
         
@@ -291,6 +382,12 @@ class TestDishesAPI:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al actualizar plato con nombre duplicado",
+        expected_result="Status Code: 400, error de conflicto",
+        module="Menús",
+        test_id="DISH-016"
+    )
     async def test_update_dish_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_ingredient):
         """DISH-016: Fail to update dish with duplicate name"""
         ingredient_id = test_ingredient.get("id")
@@ -327,6 +424,12 @@ class TestDishesAPI:
 
     # DELETE DISH TESTS
     
+    @add_test_info(
+        description="Eliminar plato exitosamente",
+        expected_result="Status Code: 200, confirmación de eliminación",
+        module="Menús",
+        test_id="DISH-017"
+    )
     async def test_delete_dish_success(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
         """DISH-017: Successfully delete dish"""
         ingredient_id = test_ingredient.get("id")
@@ -362,8 +465,14 @@ class TestDishesAPI:
         get_response = await client.get(f"{api_prefix}/dishes/{dish_id}")
         assert get_response.status_code == 404
 
+    @add_test_info(
+        description="Fallar al eliminar plato que no existe",
+        expected_result="Status Code: 404, plato no encontrado",
+        module="Menús",
+        test_id="DISH-018"
+    )
     async def test_delete_dish_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_dish_id):
-        """DISH-018: Fail to delete non-existent dish"""
+        """DISH-018: Fail to delete dish that doesn't exist"""
         response = await client.delete(f"{api_prefix}/dishes/{non_existent_dish_id}")
         
         assert response.status_code == 404
@@ -372,8 +481,14 @@ class TestDishesAPI:
 
     # COMPLEX RECIPE TESTS
     
+    @add_test_info(
+        description="Crear plato con receta compleja exitosamente",
+        expected_result="Status Code: 201, plato con receta compleja creado",
+        module="Menús",
+        test_id="DISH-019"
+    )
     async def test_create_dish_complex_recipe(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient, test_ingredient_2):
-        """DISH-019: Successfully create dish with complex recipe containing multiple ingredients"""
+        """DISH-019: Successfully create dish with complex recipe"""
         ingredient_id_1 = test_ingredient.get("id")
         ingredient_id_2 = test_ingredient_2.get("id")
         
@@ -427,6 +542,12 @@ class TestDishesAPI:
         dish_id = data["id"]
         await client.delete(f"{api_prefix}/dishes/{dish_id}")
 
+    @add_test_info(
+        description="Actualizar plato agregando ingrediente a la receta exitosamente",
+        expected_result="Status Code: 200, receta actualizada con nuevo ingrediente",
+        module="Menús",
+        test_id="DISH-020"
+    )
     async def test_update_dish_add_ingredient_to_recipe(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_ingredient_2):
         """DISH-020: Successfully update dish by adding ingredient to recipe"""
         dish_id = test_dish.get("id")

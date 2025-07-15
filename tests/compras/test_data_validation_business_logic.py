@@ -8,11 +8,18 @@ from typing import Dict, Any
 from unittest.mock import Mock, patch
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
+from ..test_metadata import add_test_info
 
 
 class TestCrossEntityValidation:
     """Test suite for Cross-Entity Validation"""
     
+    @add_test_info(
+        description="Fallar al crear producto con proveedor no existente",
+        expected_result="Status Code: 404, error de proveedor no encontrado",
+        module="Compras",
+        test_id="VAL-001"
+    )
     async def test_create_product_with_non_existent_provider(self, client: httpx.AsyncClient, api_prefix: str, non_existent_provider_id):
         """VAL-001: Fail to create product with non-existent provider"""
         product_data = {
@@ -29,6 +36,12 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
     
+    @add_test_info(
+        description="Fallar al crear orden de compra con proveedor no existente",
+        expected_result="Status Code: 404, error de proveedor no encontrado",
+        module="Compras",
+        test_id="VAL-002"
+    )
     async def test_create_purchase_order_with_non_existent_provider(self, client: httpx.AsyncClient, api_prefix: str, non_existent_provider_id, test_product):
         """VAL-002: Fail to create purchase order with non-existent provider"""
         product_id = test_product.get("_id")
@@ -52,6 +65,12 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
     
+    @add_test_info(
+        description="Fallar al crear orden de compra con producto no existente",
+        expected_result="Status Code: 404, error de producto no encontrado",
+        module="Compras",
+        test_id="VAL-003"
+    )
     async def test_create_purchase_order_with_non_existent_product(self, client: httpx.AsyncClient, api_prefix: str, test_provider, non_existent_product_id):
         """VAL-003: Fail to create purchase order with non-existent product"""
         provider_id = test_provider.get("_id")
@@ -75,6 +94,12 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data, "not found")
     
+    @add_test_info(
+        description="Fallar al recibir inventario para orden de compra no existente",
+        expected_result="Status Code: 400 o 404, error de orden no encontrada",
+        module="Compras",
+        test_id="VAL-004"
+    )
     async def test_receive_inventory_for_non_existent_purchase_order(self, client: httpx.AsyncClient, api_prefix: str, test_product, non_existent_purchase_order_id):
         """VAL-004: Fail to receive inventory for non-existent purchase order"""
         product_id = test_product.get("_id")
@@ -103,6 +128,12 @@ class TestCrossEntityValidation:
         data = response.json()
         assert_error_response(data)
     
+    @add_test_info(
+        description="Crear recibo parcial que no completa la orden de compra",
+        expected_result="Status Code: 201, orden permanece en estado pendiente",
+        module="Compras",
+        test_id="VAL-005"
+    )
     async def test_create_partial_receipt_that_does_not_complete_purchase_order(self, client: httpx.AsyncClient, api_prefix: str, test_purchase_order, test_product):
         """VAL-005: Successfully create partial receipt that doesn't complete purchase order"""
         if not test_purchase_order:
@@ -142,6 +173,12 @@ class TestCrossEntityValidation:
         order_data = order_response.json()
         assert order_data["status"] in ["pending", "shipped"]  # Not "completed"
     
+    @add_test_info(
+        description="Crear recibo que completa la orden de compra",
+        expected_result="Status Code: 201, orden cambia a estado completada",
+        module="Compras",
+        test_id="VAL-006"
+    )
     async def test_create_receipt_that_completes_purchase_order(self, client: httpx.AsyncClient, api_prefix: str, test_purchase_order, test_product):
         """VAL-006: Successfully create receipt that completes purchase order"""
         if not test_purchase_order:
@@ -185,6 +222,12 @@ class TestCrossEntityValidation:
 class TestDataConsistency:
     """Test suite for Data Consistency validation"""
     
+    @add_test_info(
+        description="Verificar que los niveles de inventario se actualizan después de recibir productos",
+        expected_result="Niveles de inventario incrementados correctamente",
+        module="Compras",
+        test_id="CONS-001"
+    )
     async def test_inventory_levels_updated_after_receipt(self, client: httpx.AsyncClient, api_prefix: str, test_product):
         """CONS-001: Verify inventory levels are correctly updated after receipt"""
         product_id = test_product.get("_id")
@@ -222,6 +265,12 @@ class TestDataConsistency:
         expected_stock = initial_stock + 25.5
         assert updated_data["total_available_stock"] == expected_stock
     
+    @add_test_info(
+        description="Verificar que los niveles de inventario se actualizan después del consumo",
+        expected_result="Niveles de inventario decrementados correctamente",
+        module="Compras",
+        test_id="CONS-002"
+    )
     async def test_inventory_levels_updated_after_consumption(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """CONS-002: Verify inventory levels are correctly updated after consumption"""
         if not test_inventory_batch:
@@ -260,6 +309,12 @@ class TestDataConsistency:
         expected_stock = initial_stock - 5.5
         assert updated_data["total_available_stock"] == expected_stock
     
+    @add_test_info(
+        description="Verificar que la lógica FIFO se mantiene en múltiples operaciones de consumo",
+        expected_result="Consumo sigue orden FIFO correctamente",
+        module="Compras",
+        test_id="CONS-003"
+    )
     async def test_fifo_logic_maintained_across_multiple_consumption_operations(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """CONS-003: Verify FIFO logic is maintained across multiple consumption operations"""
         if not test_inventory_batch:
@@ -305,6 +360,12 @@ class TestDataConsistency:
             first_consumed_batch = batch_details[0]
             assert first_consumed_batch["lot"] == oldest_batch["lot"]
     
+    @add_test_info(
+        description="Verificar que la pista de auditoría de movimientos esté completa",
+        expected_result="Historial de movimientos completo y ordenado",
+        module="Compras",
+        test_id="CONS-004"
+    )
     async def test_movement_audit_trail_is_complete(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """CONS-004: Verify movement audit trail is complete"""
         if not test_inventory_batch:

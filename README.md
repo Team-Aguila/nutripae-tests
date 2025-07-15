@@ -1,31 +1,38 @@
 # NutriPAE - Sistema de Tests y Reportes
 
-Sistema de tests automatizados para el proyecto NutriPAE con generación de reportes PDF formales.
+Sistema de tests automatizados para el proyecto NutriPAE con generación de reportes PDF. Ejecuta tests de todos los servicios (Autenticación, Compras, Menús) y genera un reporte profesional con metadata extraída dinámicamente del código fuente.
 
 ## Características
 
-- ✅ Ejecución automatizada de tests
-- ✅ Generación de reportes PDF profesionales
-- ✅ Organización por módulos (Autenticación, Usuarios, Recetas, etc.)
-- ✅ Tablas detalladas con resultados de cada test
-- ✅ Resumen ejecutivo con estadísticas
-- ✅ Orientación horizontal para mejor legibilidad
-- ✅ Timestamps automáticos
-- ✅ Apertura automática del PDF generado
+- Ejecución automatizada de tests de todos los servicios
+- Generación de reportes PDF profesionales con orientación horizontal
+- Extracción dinámica de metadata desde el código fuente
+- Organización por módulos en orden alfabético
+- Resumen ejecutivo con estadísticas generales
+- Páginas detalladas por módulo con salto de página automático
+- Validación obligatoria de metadata completa
+- Apertura automática del PDF generado
 
 ## Estructura del Proyecto
 
 ```
 nutripae-tests/
-├── tests/
+├── utils/                           # Utilidades modulares
 │   ├── __init__.py
-│   ├── config.py                    # Configuración y variables de entorno
-│   └── auth/
-│       ├── __init__.py
-│       └── auth-test.py            # Tests de autenticación
-├── generate_test_report.py         # Generador de reportes PDF
-├── run_tests_with_report.py        # Script conveniente
-├── pyproject.toml                  # Dependencias del proyecto
+│   ├── pdf_generator.py            # Generador de PDF
+│   ├── pdf_styles.py               # Estilos del PDF
+│   ├── pdf_tables.py               # Tablas del PDF
+│   ├── test_metadata_extractor.py  # Extractor de metadata
+│   └── test_runner.py              # Ejecutor de tests
+├── tests/                           # Tests organizados por servicio
+│   ├── __init__.py
+│   ├── config.py                    # Configuración y variables
+│   ├── test_metadata.py             # Decoradores para metadata
+│   ├── auth/                        # Tests de autenticación
+│   ├── compras/                     # Tests de compras
+│   └── menus/                       # Tests de menús
+├── generate_test_report.py         # Archivo principal único
+├── pyproject.toml                  # Dependencias y comandos
 └── README.md                       # Este archivo
 ```
 
@@ -36,159 +43,200 @@ nutripae-tests/
 poetry install
 ```
 
-2. Configurar variables de entorno:
-```bash
-# Crear archivo .env con las siguientes variables:
-BASE_AUTH_BACKEND_URL=http://localhost:8000/api/v1
-BASE_FRONTEND_URL=http://localhost:3000
-ADMIN_USER_EMAIL=admin@example.com
-ADMIN_USER_PASSWORD=admin123
-BASE_USER_EMAIL=user@example.com
-BASE_USER_PASSWORD=user123
-```
+2. Configurar variables de entorno.
 
 ## Uso
 
-### Método 1: Script Conveniente (Recomendado)
+El sistema provee múltiples comandos para ejecutar los tests:
+
+### Comandos de Poetry (Recomendado)
 
 ```bash
-poetry run python run_tests_with_report.py
+poetry run nutripae-tests
 ```
 
-Este script:
-- Ejecuta todos los tests
-- Genera automáticamente el reporte PDF
-- Intenta abrir el PDF generado
-- Limpia archivos temporales
-
-### Método 2: Generador Manual
+### Comando Manual
 
 ```bash
 poetry run python generate_test_report.py
 ```
 
-### Método 3: Solo Tests
+### Solo Tests (sin reporte)
 
 ```bash
-poetry run pytest tests/auth/auth-test.py -v
+poetry run pytest tests/ -v
 ```
+
+## Metadata Obligatoria para Tests
+
+Todos los tests deben incluir metadata completa usando uno de estos métodos:
+
+### Método 1: Decorador @test_info
+
+```python
+from tests.test_metadata import test_info
+
+@test_info(
+    description="Verificar login exitoso con credenciales válidas",
+    expected_result="Status Code: 200, Access Token, Token Type Bearer",
+    module="Autenticación",
+    test_id="AUTH-002"
+)
+def test_login_success():
+    # Código del test
+    pass
+```
+
+### Método 2: Docstring Estructurado
+
+```python
+def test_password_reset_request():
+    """
+    Test para solicitar restablecimiento de contraseña
+    
+    Verifica que el sistema permita solicitar el restablecimiento
+    de contraseña enviando un email válido.
+    
+    Expected: HTTP 200, mensaje confirmando envío de email
+    Module: Autenticación
+    ID: AUTH-004
+    """
+    # Código del test
+    pass
+```
+
+### Campos Obligatorios
+
+- **description**: Descripción detallada del test
+- **expected_result**: Resultado esperado (ej. "Status Code: 200")
+- **module**: Módulo al que pertenece (ej. "Autenticación")
+- **test_id**: ID único del test (ej. "AUTH-001")
 
 ## Estructura del Reporte PDF
 
-El reporte PDF generado incluye:
+### Página 1: Resumen Ejecutivo
+- Información general del proyecto
+- Tabla resumen con estadísticas por módulo
+- Totales generales de todos los servicios
 
-### 1. Página Principal (Vertical)
-- **Título**: Reporte de Tests - NutriPAE
-- **Información General**: Fecha, proyecto, versión, entorno
-- **Resumen Ejecutivo**: Tabla con estadísticas por módulo
-  - Módulo
-  - Tests totales
-  - Tests que pasaron
-  - Tests que fallaron
-  - Porcentaje de éxito
-
-### 2. Páginas de Detalle (Horizontal)
-- Una página por módulo
-- **Título del Módulo**: Ej. "Módulo: Autenticación"
-- **Estadísticas del Módulo**: Resumen numérico
-- **Tabla Detallada** con:
+### Páginas Siguientes: Detalles por Módulo
+- Una página por módulo en orden alfabético
+- Salto de página automático entre módulos
+- Estadísticas específicas del módulo
+- Tabla detallada con información completa:
+  - ID del test
   - Nombre del test
   - Descripción
-  - Resultado esperado (Status Code HTTP)
+  - Resultado esperado
   - Resultado obtenido
-  - Estado (✓ PASS / ✗ FAIL)
+  - Estado (PASS/FAIL)
   - Duración en segundos
+
+## Servicios Incluidos
+
+### Autenticación
+- Tests de login y logout
+- Validación de credenciales
+- Manejo de tokens
+
+### Compras
+- Tests de productos y proveedores
+- Gestión de inventario
+- Órdenes de compra
+
+### Menús
+- Tests de ingredientes y platos
+- Ciclos de menús
+- Programación de menús
 
 ## Configuración de Tests
 
-### Variables de Entorno
+### Variables de Entorno por Servicio
 
-Los tests utilizan las siguientes variables de entorno (definidas en `tests/config.py`):
-
+**Autenticación:**
 - `BASE_AUTH_BACKEND_URL`: URL del backend de autenticación
-- `BASE_FRONTEND_URL`: URL del frontend
 - `ADMIN_USER_EMAIL`: Email del usuario administrador
 - `ADMIN_USER_PASSWORD`: Contraseña del usuario administrador
-- `BASE_USER_EMAIL`: Email del usuario básico
-- `BASE_USER_PASSWORD`: Contraseña del usuario básico
+
+**Compras:**
+- `PAE_COMPRAS_BASE_URL`: URL del servicio de compras
+
+**Menús:**
+- `PAE_MENUS_BASE_URL`: URL del servicio de menús
 
 ### Agregar Nuevos Tests
 
-1. Crear un nuevo archivo en la carpeta correspondiente (ej. `tests/users/user-test.py`)
-2. Agregar el archivo __init__.py en la carpeta si no existe
-3. Implementar los tests usando pytest
-4. Actualizar el generador de reportes para incluir el nuevo módulo
+1. Crear el archivo de test en la carpeta correspondiente
+2. Agregar metadata obligatoria usando @test_info o docstring
+3. Implementar el test usando pytest
+4. El sistema detectará automáticamente el nuevo módulo
 
-Ejemplo de test:
+### Agregar Nuevos Servicios
 
-```python
-import requests
-import pytest
-from ..config import settings
-
-def test_user_creation():
-    """Test para crear un usuario nuevo"""
-    user_data = {
-        "email": "test@example.com",
-        "password": "test123"
-    }
-    
-    response = requests.post(
-        f"{settings.BASE_AUTH_BACKEND_URL}/users/", 
-        json=user_data,
-        timeout=5
-    )
-    
-    assert response.status_code == 201
-    assert "id" in response.json()
-```
+1. Crear carpeta en `tests/`
+2. Actualizar `get_module_name()` en `utils/test_metadata_extractor.py`
+3. Agregar la ruta en `run_all_tests()` en `utils/test_runner.py`
 
 ## Dependencias
 
 - `pytest`: Framework de testing
 - `requests`: Cliente HTTP para tests
+- `httpx`: Cliente HTTP asíncrono
 - `pydantic`: Validación de configuración
-- `pydantic-settings`: Manejo de variables de entorno
 - `reportlab`: Generación de PDFs
-- `pytest-json-report`: Exportación de resultados en JSON
+- `pytest-json-report`: Exportación de resultados
+- `pytest-asyncio`: Soporte para tests asíncronos
 
 ## Archivos Generados
 
-- `reporte_tests_YYYYMMDD_HHMMSS.pdf`: Reporte PDF principal
-- `test_results.json`: Archivo temporal con resultados (se limpia automáticamente)
-
-## Personalización
-
-### Agregar Nuevos Módulos
-
-1. Actualizar `get_module_name()` en `generate_test_report.py`
-2. Agregar descripciones en `extract_test_description()`
-3. Agregar resultados esperados en `extract_expected_result()`
-
-### Modificar Estilos del PDF
-
-Los estilos se pueden personalizar en `setup_custom_styles()` en `generate_test_report.py`.
+- `reporte_tests_nutripae_YYYYMMDD_HHMMSS.pdf`: Reporte PDF principal
+- `test_results.json`: Archivo temporal (se limpia automáticamente)
 
 ## Solución de Problemas
 
-### Tests se cuelgan
-- Verificar que el backend esté ejecutándose
-- Verificar las URLs en las variables de entorno
-- Los tests tienen timeout de 5 segundos para evitar cuelgues
+### Error de Metadata Faltante
+```
+ERROR DE METADATA: Test no tiene los campos obligatorios
+```
+**Solución**: Agregar @test_info o docstring estructurado con todos los campos obligatorios
 
-### Error de importación
-- Verificar que existen los archivos `__init__.py` en las carpetas de tests
-- Verificar que las rutas de importación son correctas
+### Tests se Cuelgan
+**Causa**: Backend no disponible
+**Solución**: Verificar que los servicios estén ejecutándose y las URLs sean correctas
 
-### PDF no se genera
-- Verificar que reportlab esté instalado
-- Verificar permisos de escritura en el directorio
+### PDF no se Genera
+**Causa**: Permisos o dependencias
+**Solución**: Verificar instalación de reportlab y permisos de escritura
 
-## Comando Rápido
+### Error de Importación
+**Causa**: Archivos __init__.py faltantes
+**Solución**: Verificar que existan archivos __init__.py en todas las carpetas de tests
+
+## Personalización
+
+### Modificar Estilos del PDF
+Editar `utils/pdf_styles.py` para cambiar colores, fuentes y espaciado.
+
+### Cambiar Estructura de Tablas
+Modificar `utils/pdf_tables.py` para ajustar columnas y contenido.
+
+### Agregar Nuevos Módulos
+Actualizar `utils/test_metadata_extractor.py` para reconocer nuevos tipos de módulos.
+
+## Comandos Útiles
 
 ```bash
-# Ejecutar tests y generar reporte en un solo comando
-poetry run python run_tests_with_report.py
+# Generar reporte completo
+poetry run test-report
+
+# Solo ejecutar tests
+poetry run pytest tests/ -v
+
+# Ejecutar tests de un servicio específico
+poetry run pytest tests/auth/ -v
+
+# Ver ayuda de pytest
+poetry run pytest --help
 ```
 
-¡El PDF se abrirá automáticamente cuando esté listo!
+El sistema ejecutará automáticamente los tests, validará la metadata, generará el PDF y intentará abrirlo. Los archivos temporales se limpian automáticamente al finalizar.
