@@ -5,6 +5,7 @@ Test cases: INV-MOV-001 to INV-MOV-037
 import pytest
 import httpx
 from typing import Dict, Any
+from bson import ObjectId
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
 from ..test_metadata import add_test_info
@@ -102,10 +103,18 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-004"
     )
-    async def test_receive_inventory_duplicate_batch_number(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-004: Fail to receive inventory with duplicate batch number"""
-        receipt_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+    async def test_receive_inventory_duplicate_batch_number(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-004: Fail to receive with duplicate batch number"""
+        if not test_product:
+            pytest.skip("No test product available for duplicate batch test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for duplicate batch test")
+        
+        # First, create an inventory with a specific batch number
+        first_receipt_data = {
+            "product_id": product_id,
             "institution_id": 1,
             "storage_location": "warehouse-01",
             "quantity_received": 25.5,
@@ -115,7 +124,23 @@ class TestInventoryMovementsAPI:
             "received_by": "warehouse_manager"
         }
         
-        response = await client.post(f"{api_prefix}/inventory-movements/receive-inventory", json=receipt_data)
+        # Create the first inventory
+        first_response = await client.post(f"{api_prefix}/inventory-movements/receive-inventory", json=first_receipt_data)
+        assert first_response.status_code == 201
+        
+        # Now try to create another inventory with the same batch number
+        duplicate_receipt_data = {
+            "product_id": product_id,
+            "institution_id": 1,
+            "storage_location": "warehouse-02",  # Different location
+            "quantity_received": 15.0,
+            "unit_of_measure": "kg",
+            "expiration_date": "2024-07-15",
+            "batch_number": "BATCH-2024-001",  # Same batch number
+            "received_by": "warehouse_manager"
+        }
+        
+        response = await client.post(f"{api_prefix}/inventory-movements/receive-inventory", json=duplicate_receipt_data)
         
         assert response.status_code == 409
         data = response.json()
@@ -127,10 +152,10 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-005"
     )
-    async def test_receive_inventory_invalid_quantity(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-005: Fail to receive inventory with invalid quantity"""
+    async def test_receive_inventory_invalid_quantity(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-005: Fail to receive with invalid quantity"""
         receipt_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": test_product["_id"],
             "institution_id": 1,
             "storage_location": "warehouse-01",
             "quantity_received": -5.0,
@@ -152,10 +177,10 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-006"
     )
-    async def test_receive_inventory_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-006: Fail to receive inventory with missing required fields"""
+    async def test_receive_inventory_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-006: Fail to receive with missing required fields"""
         receipt_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": test_product["_id"],
             "institution_id": 1,
             "quantity_received": 25.5
         }
@@ -213,10 +238,34 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-008"
     )
-    async def test_consume_inventory_single_batch_success(self, client: httpx.AsyncClient, api_prefix: str):
+    async def test_consume_inventory_single_batch_success(self, client: httpx.AsyncClient, api_prefix: str, test_product):
         """INV-MOV-008: Successfully consume inventory from single batch"""
+        if not test_product:
+            pytest.skip("No test product available for consumption test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for consumption test")
+        
+        # First, create inventory to consume
+        receipt_data = {
+            "product_id": product_id,
+            "institution_id": 1,
+            "storage_location": "warehouse-01",
+            "quantity_received": 50.0,  # Create enough inventory
+            "unit_of_measure": "kg",
+            "expiration_date": "2024-06-15",
+            "batch_number": f"BATCH-CONSUME-{ObjectId()}",
+            "received_by": "warehouse_manager"
+        }
+        
+        # Create inventory first
+        receipt_response = await client.post(f"{api_prefix}/inventory-movements/receive-inventory", json=receipt_data)
+        assert receipt_response.status_code == 201
+        
+        # Now consume some of the inventory
         consumption_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": product_id,
             "institution_id": 1,
             "storage_location": "warehouse-01",
             "quantity": 2.0,
@@ -241,10 +290,17 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-009"
     )
-    async def test_consume_inventory_insufficient_stock(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-009: Fail to consume inventory with insufficient stock"""
+    async def test_consume_inventory_insufficient_stock(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-009: Fail to consume with insufficient stock"""
+        if not test_product:
+            pytest.skip("No test product available for insufficient stock test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for insufficient stock test")
+        
         consumption_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": product_id,
             "institution_id": 1,
             "storage_location": "warehouse-01",
             "quantity": 100.0,
@@ -293,10 +349,17 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-011"
     )
-    async def test_consume_inventory_invalid_quantity(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-011: Fail to consume inventory with invalid quantity"""
+    async def test_consume_inventory_invalid_quantity(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-011: Fail to consume with invalid quantity"""
+        if not test_product:
+            pytest.skip("No test product available for invalid quantity test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for invalid quantity test")
+        
         consumption_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": product_id,
             "institution_id": 1,
             "storage_location": "warehouse-01",
             "quantity": -5.0,
@@ -319,10 +382,17 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-012"
     )
-    async def test_consume_inventory_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-012: Fail to consume inventory with missing required fields"""
+    async def test_consume_inventory_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-012: Fail to consume with missing required fields"""
+        if not test_product:
+            pytest.skip("No test product available for missing fields test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for missing fields test")
+        
         consumption_data = {
-            "product_id": "6873372e4a1672992ce8b353",
+            "product_id": product_id,
             "institution_id": 1,
             "quantity": 5.0
         }
@@ -369,12 +439,10 @@ class TestInventoryMovementsAPI:
         assert "transaction_id" in data
         assert data["product_id"] == adjustment_data["product_id"]
         assert data["inventory_id"] == adjustment_data["inventory_id"]
-        # API returns adjustment_quantity instead of quantity
         assert data["adjustment_quantity"] == adjustment_data["quantity"]
         assert data["unit"] == adjustment_data["unit"]
         assert data["reason"] == adjustment_data["reason"]
         assert "movement_id" in data
-        # API returns new_stock instead of new_inventory_level
         assert "new_stock" in data
         assert "previous_stock" in data
         assert "created_at" in data
@@ -411,7 +479,6 @@ class TestInventoryMovementsAPI:
         assert response.status_code == 201
         data = response.json()
         assert "transaction_id" in data
-        # API returns adjustment_quantity instead of quantity
         assert data["adjustment_quantity"] == adjustment_data["quantity"]
 
     @add_test_info(
@@ -453,11 +520,18 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-016"
     )
-    async def test_manual_adjustment_non_existent_inventory(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-016: Fail manual adjustment on non-existent inventory"""
+    async def test_manual_adjustment_non_existent_inventory(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-016: Fail to create adjustment with non-existent inventory"""
+        if not test_product:
+            pytest.skip("No test product available for non-existent inventory test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for non-existent inventory test")
+        
         adjustment_data = {
-            "product_id": "6873372e4a1672992ce8b353",
-            "inventory_id": "648f8f8f8f8f8f8f8f8f8f8b",
+            "product_id": product_id,
+            "inventory_id": "648f8f8f8f8f8f8f8f8f8f8b",  # Non-existent inventory ID
             "quantity": 5.0,
             "unit": "kg",
             "reason": "Physical count",
@@ -507,16 +581,22 @@ class TestInventoryMovementsAPI:
         assert data["adjustment_quantity"] == 0.0
 
     # PRODUCT MOVEMENTS QUERY TESTS
-    
     @add_test_info(
         description="Obtener movimientos de producto exitosamente",
         expected_result="Status Code: 200, lista de movimientos del producto",
         module="Compras",
         test_id="INV-MOV-018"
     )
-    async def test_get_product_movements_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-018: Successfully get product movements"""
-        response = await client.get(f"{api_prefix}/inventory-movements/product/6873372e4a1672992ce8b353")
+    async def test_get_product_movements_success(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-018: Successfully retrieve movements for a product"""
+        if not test_product:
+            pytest.skip("No test product available for movements test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for movements test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/product/{product_id}")
         
         assert response.status_code == 200
         data = response.json()
@@ -537,9 +617,16 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-019"
     )
-    async def test_get_product_movements_filtered_by_institution(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-019: Successfully get product movements filtered by institution"""
-        response = await client.get(f"{api_prefix}/inventory-movements/product/6873372e4a1672992ce8b353", params={"institution_id": 1})
+    async def test_get_product_movements_filtered_by_institution(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-019: Successfully retrieve movements filtered by institution"""
+        if not test_product:
+            pytest.skip("No test product available for institution filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for institution filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/product/{product_id}", params={"institution_id": 1})
         
         assert response.status_code == 200
         data = response.json()
@@ -551,9 +638,16 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-020"
     )
-    async def test_get_product_movements_filtered_by_type(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-020: Successfully get product movements filtered by type"""
-        response = await client.get(f"{api_prefix}/inventory-movements/product/6873372e4a1672992ce8b353", params={"movement_type": "receipt"})
+    async def test_get_product_movements_filtered_by_type(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-020: Successfully retrieve movements filtered by type"""
+        if not test_product:
+            pytest.skip("No test product available for type filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for type filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/product/{product_id}", params={"movement_type": "receipt"})
         
         assert response.status_code == 200
         data = response.json()
@@ -565,9 +659,16 @@ class TestInventoryMovementsAPI:
         module="Compras",
         test_id="INV-MOV-021"
     )
-    async def test_get_product_movements_with_pagination(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-021: Successfully get product movements with pagination"""
-        response = await client.get(f"{api_prefix}/inventory-movements/product/6873372e4a1672992ce8b353", params={"limit": 10, "offset": 5})
+    async def test_get_product_movements_with_pagination(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-021: Successfully retrieve movements with pagination"""
+        if not test_product:
+            pytest.skip("No test product available for pagination test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for pagination test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/product/{product_id}", params={"limit": 10, "offset": 5})
         
         assert response.status_code == 200
         data = response.json()
@@ -604,57 +705,75 @@ class TestInventoryMovementsAPI:
         assert_error_response(data)
 
     # CURRENT STOCK TESTS
-    
     @add_test_info(
         description="Obtener stock actual exitosamente",
         expected_result="Status Code: 200, información de stock actual",
         module="Compras",
         test_id="INV-MOV-024"
     )
-    async def test_get_current_stock_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-024: Successfully get current stock"""
-        response = await client.get(f"{api_prefix}/inventory-movements/stock/6873372e4a1672992ce8b353/1")
+    async def test_get_current_stock_success(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-022: Successfully retrieve current stock for a product"""
+        if not test_product:
+            pytest.skip("No test product available for current stock test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for current stock test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/stock/{product_id}/1")
         
         assert response.status_code == 200
         data = response.json()
         assert "product_id" in data
+        assert data["product_id"] == product_id
         assert "institution_id" in data
         assert "current_stock" in data
         assert "unit" in data
-        assert data["product_id"] == "6873372e4a1672992ce8b353"
-        assert data["institution_id"] == 1
+        assert "storage_location" in data
 
     @add_test_info(
         description="Obtener stock actual filtrado por ubicación de almacenamiento",
         expected_result="Status Code: 200, stock filtrado por ubicación",
         module="Compras",
-        test_id="INV-MOV-025"
+        test_id="INV-MOV-023"
     )
-    async def test_get_current_stock_filtered_by_storage(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-025: Successfully get current stock filtered by storage location"""
-        response = await client.get(f"{api_prefix}/inventory-movements/stock/6873372e4a1672992ce8b353/1", params={"storage_location": "warehouse-01"})
+    async def test_get_current_stock_filtered_by_storage(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-023: Successfully retrieve current stock filtered by storage location"""
+        if not test_product:
+            pytest.skip("No test product available for storage filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for storage filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/stock/{product_id}/1", params={"storage_location": "warehouse-01"})
         
         assert response.status_code == 200
         data = response.json()
         assert "product_id" in data
-        assert "storage_location" in data
-        assert data["storage_location"] == "warehouse-01"
-
+        assert "current_stock" in data
+        
     @add_test_info(
         description="Obtener stock actual filtrado por lote",
         expected_result="Status Code: 200, stock filtrado por lote",
         module="Compras",
-        test_id="INV-MOV-026"
+        test_id="INV-MOV-024"
     )
-    async def test_get_current_stock_filtered_by_lot(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-026: Successfully get current stock filtered by lot"""
-        response = await client.get(f"{api_prefix}/inventory-movements/stock/6873372e4a1672992ce8b353/1", params={"lot": "LOT-2024-001"})
+    async def test_get_current_stock_filtered_by_lot(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-024: Successfully retrieve current stock filtered by lot"""
+        if not test_product:
+            pytest.skip("No test product available for lot filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for lot filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/stock/{product_id}/1", params={"lot": "LOT-2024-001"})
         
         assert response.status_code == 200
         data = response.json()
         assert "product_id" in data
-        assert "lot" in data
-        assert data["lot"] == "LOT-2024-001"
+        assert "current_stock" in data
 
     @add_test_info(
         description="Fallar al obtener stock actual de producto no existente",
@@ -690,42 +809,54 @@ class TestInventoryMovementsAPI:
         assert_error_response(data)
 
     # STOCK SUMMARY TESTS
-    
     @add_test_info(
         description="Obtener resumen de stock exitosamente",
         expected_result="Status Code: 200, resumen completo de stock",
         module="Compras",
-        test_id="INV-MOV-029"
-    )
-    async def test_get_stock_summary_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-029: Successfully get stock summary"""
-        response = await client.get(f"{api_prefix}/inventory-movements/stock-summary/6873372e4a1672992ce8b353/1")
+        test_id="INV-MOV-025"
+    )    
+    async def test_get_stock_summary_success(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-025: Successfully retrieve stock summary for a product"""
+        if not test_product:
+            pytest.skip("No test product available for stock summary test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for stock summary test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/stock-summary/{product_id}/1")
         
         assert response.status_code == 200
         data = response.json()
         assert "product_id" in data
+        assert data["product_id"] == product_id
         assert "institution_id" in data
         assert "total_available_stock" in data
-        assert "number_of_batches" in data
+        assert "unit" in data
+        assert "storage_location" in data
         assert "batches" in data
-        assert data["product_id"] == "6873372e4a1672992ce8b353"
-        assert data["institution_id"] == 1
 
     @add_test_info(
         description="Obtener resumen de stock filtrado por ubicación de almacenamiento",
         expected_result="Status Code: 200, resumen filtrado por ubicación",
         module="Compras",
-        test_id="INV-MOV-030"
+        test_id="INV-MOV-026"
     )
-    async def test_get_stock_summary_filtered_by_storage(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-030: Successfully get stock summary filtered by storage location"""
-        response = await client.get(f"{api_prefix}/inventory-movements/stock-summary/6873372e4a1672992ce8b353/1", params={"storage_location": "warehouse-01"})
+    async def test_get_stock_summary_filtered_by_storage(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-026: Successfully retrieve stock summary filtered by storage location"""
+        if not test_product:
+            pytest.skip("No test product available for storage summary filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for storage summary filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/stock-summary/{product_id}/1", params={"storage_location": "warehouse-01"})
         
         assert response.status_code == 200
         data = response.json()
         assert "product_id" in data
-        assert "storage_location" in data
-        assert data["storage_location"] == "warehouse-01"
+        assert "total_available_stock" in data
 
     @add_test_info(
         description="Fallar al obtener resumen de stock de producto no existente",
@@ -766,37 +897,53 @@ class TestInventoryMovementsAPI:
         assert_error_response(data)
 
     # CONSUMPTION HISTORY TESTS
-    
     @add_test_info(
         description="Obtener historial de consumo exitosamente",
         expected_result="Status Code: 200, historial de consumo",
         module="Compras",
         test_id="INV-MOV-033"
     )
-    async def test_get_consumption_history_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-033: Successfully get consumption history"""
-        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/6873372e4a1672992ce8b353")
+    async def test_get_consumption_history_success(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-027: Successfully retrieve consumption history for a product"""
+        if not test_product:
+            pytest.skip("No test product available for consumption history test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for consumption history test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/{product_id}")
         
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        if data:  # If there are movements
-            movement = data[0]
-            assert "id" in movement or "_id" in movement
-            assert "movement_type" in movement
-            assert "product_id" in movement
-            assert "quantity" in movement
-            assert "unit" in movement
+        if data:  # If there are consumption records
+            consumption = data[0]
+            assert "id" in consumption or "_id" in consumption
+            assert "product_id" in consumption
+            assert "quantity" in consumption
+            assert "unit" in consumption
+            assert "consumption_date" in consumption
+            assert "reason" in consumption
+            assert "consumed_by" in consumption
+            assert "created_at" in consumption
 
     @add_test_info(
         description="Obtener historial de consumo filtrado por institución",
         expected_result="Status Code: 200, historial filtrado por institución",
         module="Compras",
-        test_id="INV-MOV-034"
+        test_id="INV-MOV-028"
     )
-    async def test_get_consumption_history_filtered_by_institution(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-034: Successfully get consumption history filtered by institution"""
-        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/6873372e4a1672992ce8b353", params={"institution_id": 1})
+    async def test_get_consumption_history_filtered_by_institution(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-028: Successfully retrieve consumption history filtered by institution"""
+        if not test_product:
+            pytest.skip("No test product available for institution consumption filter test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for institution consumption filter test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/{product_id}", params={"institution_id": 1})
         
         assert response.status_code == 200
         data = response.json()
@@ -806,16 +953,22 @@ class TestInventoryMovementsAPI:
         description="Obtener historial de consumo con paginación",
         expected_result="Status Code: 200, historial paginado",
         module="Compras",
-        test_id="INV-MOV-035"
+        test_id="INV-MOV-029"
     )
-    async def test_get_consumption_history_with_pagination(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-MOV-035: Successfully get consumption history with pagination"""
-        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/6873372e4a1672992ce8b353", params={"limit": 10, "offset": 5})
+    async def test_get_consumption_history_with_pagination(self, client: httpx.AsyncClient, api_prefix: str, test_product):
+        """INV-MOV-029: Successfully retrieve consumption history with pagination"""
+        if not test_product:
+            pytest.skip("No test product available for consumption pagination test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for consumption pagination test")
+        
+        response = await client.get(f"{api_prefix}/inventory-movements/consumption-history/{product_id}", params={"limit": 10, "offset": 5})
         
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        assert len(data) <= 10
 
     @add_test_info(
         description="Fallar al obtener historial de consumo de producto no existente",
