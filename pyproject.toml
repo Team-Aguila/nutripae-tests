@@ -22,7 +22,6 @@ dependencies = [
     "pytest-html (>=4.1.1,<5.0.0)",
     "pymongo (>=4.13.2,<5.0.0)",
     "selenium (>=4.34.2,<5.0.0)",
-    "selenium-page-factory (>=2.7,<3.0)"
 ]
 
 [tool.poetry]

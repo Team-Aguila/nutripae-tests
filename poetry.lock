@@ -1605,20 +1605,6 @@ urllib3 = {version = ">=2.5.0,<2.6.0", extras = ["socks"]}
 websocket-client = ">=1.8.0,<1.9.0"
 
 [[package]]
-name = "selenium-page-factory"
-version = "2.7"
-description = "Python library provides page factory approach to implement page object model in selenium"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "selenium-page-factory-2.7.tar.gz", hash = "sha256:6803a2e06c2499571c8dffe163524d1cfb09ff28b35d0da5fc25e33647bd9754"},
-]
-
-[package.dependencies]
-selenium = "*"
-
-[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1819,4 +1805,4 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4"
-content-hash = "9144b18d77b1c7852bff10de00ab67dc102faea616ff37395355f9c41792d7df"
+content-hash = "93cffd9c135fc7ab711cda45d3343f796c71725c1b2bc1b8ea2817d50ac97dd4"
