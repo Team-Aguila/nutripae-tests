@@ -8,10 +8,16 @@ class TestConfig:
     """Configuration class for API tests"""
     
     # API Configuration
-    BASE_URL: str = os.getenv("PAE_COMPRAS_BASE_URL", "http://127.0.0.1:8002")
-    API_PREFIX: str = "/api/v1/compras"
+    BASE_URL: str = os.getenv("PAE_COMPRAS_BASE_URL", "http://127.0.0.1:8004")
+    API_PREFIX: str = "/api/v1"
     TIMEOUT: float = 30.0
     FOLLOW_REDIRECTS: bool = True
+    
+    # Authentication Configuration
+    AUTH_BASE_URL: str = os.getenv("PAE_AUTH_BASE_URL", "http://127.0.0.1:8000")
+    AUTH_LOGIN_ENDPOINT: str = "/api/v1/auth/login"
+    AUTH_EMAIL: str = os.getenv("PAE_AUTH_EMAIL", "admin@test.com")
+    AUTH_PASSWORD: str = os.getenv("PAE_AUTH_PASSWORD", "Password123!")
     
     # Environment Detection
     ENVIRONMENT: str = os.getenv("TEST_ENV", "local")
@@ -23,6 +29,11 @@ class TestConfig:
     def get_full_url(cls, endpoint: str) -> str:
         """Get full URL for an endpoint"""
         return f"{cls.BASE_URL}{cls.API_PREFIX}{endpoint}"
+    
+    @classmethod
+    def get_auth_url(cls, endpoint: str) -> str:
+        """Get full URL for auth endpoint"""
+        return f"{cls.AUTH_BASE_URL}{endpoint}"
     
     @classmethod
     def is_local(cls) -> bool:
