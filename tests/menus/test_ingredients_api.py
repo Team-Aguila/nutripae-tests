@@ -7,6 +7,7 @@ import httpx
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response, assert_ingredient_response
+from ..test_metadata import add_test_info
 
 
 class TestIngredientsAPI:
@@ -14,6 +15,12 @@ class TestIngredientsAPI:
     
     # CREATE INGREDIENT TESTS
     
+    @add_test_info(
+        description="Crear un ingrediente exitosamente",
+        expected_result="Status Code: 201, datos del ingrediente creado",
+        module="Menús",
+        test_id="ING-001"
+    )
     async def test_create_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-001: Successfully create a new ingredient"""
         ingredient_data = {
@@ -44,6 +51,12 @@ class TestIngredientsAPI:
         ingredient_id = data["id"]
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Fallar al crear ingrediente con campos requeridos faltantes",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="ING-002"
+    )
     async def test_create_ingredient_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-002: Fail to create ingredient with missing required fields"""
         invalid_data = {
@@ -62,6 +75,12 @@ class TestIngredientsAPI:
         assert any("name" in str(error) for error in data["detail"])
         assert any("base_unit_of_measure" in str(error) for error in data["detail"])
 
+    @add_test_info(
+        description="Fallar al crear ingrediente con estado inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="ING-003"
+    )
     async def test_create_ingredient_invalid_status(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-003: Fail to create ingredient with invalid status"""
         invalid_data = {
@@ -80,6 +99,12 @@ class TestIngredientsAPI:
         assert isinstance(data["detail"], list)
         assert any("status" in str(error) for error in data["detail"])
 
+    @add_test_info(
+        description="Fallar al crear ingrediente con nombre duplicado",
+        expected_result="Status Code: 400, error de conflicto",
+        module="Menús",
+        test_id="ING-004"
+    )
     async def test_create_ingredient_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-004: Fail to create ingredient with duplicate name"""
         ingredient_data = {
@@ -103,6 +128,12 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient1_id}")
 
+    @add_test_info(
+        description="Fallar al crear ingrediente con nombre vacío",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="ING-005"
+    )
     async def test_create_ingredient_empty_name(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-005: Fail to create ingredient with empty name"""
         invalid_data = {
@@ -122,6 +153,12 @@ class TestIngredientsAPI:
 
     # READ INGREDIENT TESTS
     
+    @add_test_info(
+        description="Obtener ingrediente por ID exitosamente",
+        expected_result="Status Code: 200, datos completos del ingrediente",
+        module="Menús",
+        test_id="ING-006"
+    )
     async def test_get_ingredient_by_id_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-006: Successfully get ingredient by ID"""
         # First create an ingredient
@@ -148,14 +185,26 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Fallar al obtener ingrediente que no existe",
+        expected_result="Status Code: 404, ingrediente no encontrado",
+        module="Menús",
+        test_id="ING-007"
+    )
     async def test_get_ingredient_by_id_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_ingredient_id):
-        """ING-007: Fail to get ingredient with non-existent ID"""
+        """ING-007: Fail to get ingredient that doesn't exist"""
         response = await client.get(f"{api_prefix}/ingredients/{non_existent_ingredient_id}")
         
         assert response.status_code == 404
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al obtener ingrediente con ID en formato inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Menús",
+        test_id="ING-008"
+    )
     async def test_get_ingredient_by_id_invalid_format(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-008: Fail to get ingredient with invalid ID format"""
         invalid_id = "invalid-id-format"
@@ -167,6 +216,12 @@ class TestIngredientsAPI:
 
     # LIST INGREDIENTS TESTS
     
+    @add_test_info(
+        description="Obtener lista de ingredientes con paginación por defecto",
+        expected_result="Status Code: 200, lista paginada de ingredientes",
+        module="Menús",
+        test_id="ING-009"
+    )
     async def test_get_ingredients_list_default_pagination(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-009: Successfully get ingredients list with default pagination"""
         response = await client.get(f"{api_prefix}/ingredients/")
@@ -181,8 +236,14 @@ class TestIngredientsAPI:
             assert "base_unit_of_measure" in ingredient
             assert "status" in ingredient
 
+    @add_test_info(
+        description="Obtener lista de ingredientes con paginación personalizada",
+        expected_result="Status Code: 200, lista con paginación personalizada",
+        module="Menús",
+        test_id="ING-010"
+    )
     async def test_get_ingredients_list_with_pagination(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-010: Successfully get ingredients list with custom pagination"""
+        """ING-010: Successfully get ingredients list with pagination"""
         params = {"skip": 0, "limit": 5}
         response = await client.get(f"{api_prefix}/ingredients/", params=params)
         
@@ -191,6 +252,12 @@ class TestIngredientsAPI:
         assert isinstance(data, list)
         assert len(data) <= 5
 
+    @add_test_info(
+        description="Obtener lista de ingredientes filtrada por estado",
+        expected_result="Status Code: 200, lista filtrada por estado",
+        module="Menús",
+        test_id="ING-011"
+    )
     async def test_get_ingredients_list_with_status_filter(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-011: Successfully get ingredients list filtered by status"""
         params = {"status": "active"}
@@ -203,6 +270,12 @@ class TestIngredientsAPI:
         for ingredient in data:
             assert ingredient["status"] == "active"
 
+    @add_test_info(
+        description="Obtener lista de ingredientes filtrada por categoría",
+        expected_result="Status Code: 200, lista filtrada por categoría",
+        module="Menús",
+        test_id="ING-012"
+    )
     async def test_get_ingredients_list_with_category_filter(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-012: Successfully get ingredients list filtered by category"""
         # First create an ingredient with specific category
@@ -230,8 +303,14 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Obtener lista de ingredientes con búsqueda por nombre",
+        expected_result="Status Code: 200, lista filtrada por búsqueda",
+        module="Menús",
+        test_id="ING-013"
+    )
     async def test_get_ingredients_list_with_search(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-013: Successfully get ingredients list with search term"""
+        """ING-013: Successfully get ingredients list with search filter"""
         # First create an ingredient with specific name
         ingredient_data = {
             "name": "Unique Search Test Ingredient ING-013",
@@ -256,8 +335,14 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Obtener lista de ingredientes activos excluyendo inactivos",
+        expected_result="Status Code: 200, solo ingredientes activos",
+        module="Menús",
+        test_id="ING-014"
+    )
     async def test_get_active_ingredients_excludes_inactive(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-014: Get active ingredients endpoint excludes inactive ingredients"""
+        """ING-014: Successfully get active ingredients excluding inactive ones"""
         # Create an active ingredient
         active_data = {
             "name": "Active Ingredient ING-014",
@@ -300,6 +385,12 @@ class TestIngredientsAPI:
 
     # UPDATE INGREDIENT TESTS
     
+    @add_test_info(
+        description="Actualizar nombre de ingrediente exitosamente",
+        expected_result="Status Code: 200, datos del ingrediente actualizado",
+        module="Menús",
+        test_id="ING-015"
+    )
     async def test_update_ingredient_name_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-015: Successfully update ingredient name"""
         # Create ingredient
@@ -324,6 +415,12 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Actualizar múltiples campos de ingrediente exitosamente",
+        expected_result="Status Code: 200, ingrediente con múltiples campos actualizados",
+        module="Menús",
+        test_id="ING-016"
+    )
     async def test_update_ingredient_multiple_fields_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-016: Successfully update multiple ingredient fields"""
         # Create ingredient
@@ -356,8 +453,14 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Fallar al actualizar ingrediente que no existe",
+        expected_result="Status Code: 404, ingrediente no encontrado",
+        module="Menús",
+        test_id="ING-017"
+    )
     async def test_update_ingredient_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_ingredient_id):
-        """ING-017: Fail to update non-existent ingredient"""
+        """ING-017: Fail to update ingredient that doesn't exist"""
         update_data = {"name": "Updated Name"}
         response = await client.put(f"{api_prefix}/ingredients/{non_existent_ingredient_id}", json=update_data)
         
@@ -365,6 +468,12 @@ class TestIngredientsAPI:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al actualizar ingrediente con nombre duplicado",
+        expected_result="Status Code: 400, error de conflicto",
+        module="Menús",
+        test_id="ING-018"
+    )
     async def test_update_ingredient_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-018: Fail to update ingredient with duplicate name"""
         # Create first ingredient
@@ -401,8 +510,14 @@ class TestIngredientsAPI:
 
     # SOFT DELETE TESTS
     
+    @add_test_info(
+        description="Inactivar ingrediente exitosamente",
+        expected_result="Status Code: 200, ingrediente inactivado",
+        module="Menús",
+        test_id="ING-019"
+    )
     async def test_inactivate_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-019: Successfully inactivate (soft delete) ingredient"""
+        """ING-019: Successfully inactivate ingredient"""
         # Create ingredient
         ingredient_data = {
             "name": "Inactivate Test ING-019",
@@ -425,6 +540,12 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Activar ingrediente exitosamente",
+        expected_result="Status Code: 200, ingrediente activado",
+        module="Menús",
+        test_id="ING-020"
+    )
     async def test_activate_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-020: Successfully activate ingredient"""
         # Create inactive ingredient
@@ -451,6 +572,12 @@ class TestIngredientsAPI:
 
     # DELETE INGREDIENT TESTS
     
+    @add_test_info(
+        description="Eliminar ingrediente exitosamente",
+        expected_result="Status Code: 200, confirmación de eliminación",
+        module="Menús",
+        test_id="ING-021"
+    )
     async def test_delete_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-021: Successfully delete ingredient"""
         # Create ingredient
@@ -475,8 +602,14 @@ class TestIngredientsAPI:
         get_response = await client.get(f"{api_prefix}/ingredients/{ingredient_id}")
         assert get_response.status_code == 404
 
+    @add_test_info(
+        description="Fallar al eliminar ingrediente que no existe",
+        expected_result="Status Code: 404, ingrediente no encontrado",
+        module="Menús",
+        test_id="ING-022"
+    )
     async def test_delete_ingredient_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_ingredient_id):
-        """ING-022: Fail to delete non-existent ingredient"""
+        """ING-022: Fail to delete ingredient that doesn't exist"""
         response = await client.delete(f"{api_prefix}/ingredients/{non_existent_ingredient_id}")
         
         assert response.status_code == 404
@@ -485,6 +618,12 @@ class TestIngredientsAPI:
 
     # UTILITY ENDPOINTS TESTS
     
+    @add_test_info(
+        description="Obtener categorías de ingredientes exitosamente",
+        expected_result="Status Code: 200, lista de categorías",
+        module="Menús",
+        test_id="ING-023"
+    )
     async def test_get_ingredient_categories_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-023: Successfully get ingredient categories"""
         response = await client.get(f"{api_prefix}/ingredients/categories")
@@ -496,6 +635,12 @@ class TestIngredientsAPI:
         for category in data:
             assert isinstance(category, str)
 
+    @add_test_info(
+        description="Obtener estadísticas de ingredientes exitosamente",
+        expected_result="Status Code: 200, estadísticas de ingredientes",
+        module="Menús",
+        test_id="ING-024"
+    )
     async def test_get_ingredient_statistics_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-024: Successfully get ingredient statistics"""
         response = await client.get(f"{api_prefix}/ingredients/statistics")
@@ -511,15 +656,27 @@ class TestIngredientsAPI:
         assert isinstance(data["active_ingredients"], int)
         assert isinstance(data["inactive_ingredients"], int)
 
+    @add_test_info(
+        description="Verificar disponibilidad de nombre de ingrediente",
+        expected_result="Status Code: 200, nombre disponible",
+        module="Menús",
+        test_id="ING-025"
+    )
     async def test_check_name_uniqueness_available(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-025: Check name uniqueness for available name"""
+        """ING-025: Successfully check name uniqueness - available"""
         params = {"name": "Unique Name Check ING-025"}
         response = await client.head(f"{api_prefix}/ingredients/validate/name-uniqueness", params=params)
         
         assert response.status_code == 200
 
+    @add_test_info(
+        description="Verificar que nombre de ingrediente está ocupado",
+        expected_result="Status Code: 200, nombre no disponible",
+        module="Menús",
+        test_id="ING-026"
+    )
     async def test_check_name_uniqueness_taken(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-026: Check name uniqueness for taken name"""
+        """ING-026: Successfully check name uniqueness - taken"""
         # Create ingredient
         ingredient_data = {
             "name": "Taken Name Check ING-026",
@@ -539,6 +696,12 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Obtener ingrediente detallado exitosamente",
+        expected_result="Status Code: 200, información detallada del ingrediente",
+        module="Menús",
+        test_id="ING-027"
+    )
     async def test_get_detailed_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-027: Successfully get detailed ingredient information"""
         # Create ingredient
@@ -565,6 +728,12 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
+    @add_test_info(
+        description="Obtener lista detallada de ingredientes exitosamente",
+        expected_result="Status Code: 200, lista detallada de ingredientes",
+        module="Menús",
+        test_id="ING-028"
+    )
     async def test_get_detailed_ingredients_list_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-028: Successfully get detailed ingredients list"""
         response = await client.get(f"{api_prefix}/ingredients/detailed")

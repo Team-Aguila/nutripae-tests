@@ -11,12 +11,14 @@ from .config import TestConfig
 
 
 @pytest.fixture
-async def client():
+async def client(auth_token: str):
     """HTTP client fixture for making API requests"""
+    headers = {"Authorization": f"Bearer {auth_token}"}
     async with httpx.AsyncClient(
         base_url=TestConfig.BASE_URL,
         timeout=TestConfig.TIMEOUT,
-        follow_redirects=TestConfig.FOLLOW_REDIRECTS
+        follow_redirects=TestConfig.FOLLOW_REDIRECTS,
+        headers=headers
     ) as client:
         yield client
 
@@ -57,7 +59,7 @@ async def test_ingredient(client: httpx.AsyncClient, api_prefix: str):
     
     # Cleanup: Delete ingredient
     try:
-        ingredient_id = ingredient.get("id")
+        ingredient_id = ingredient.get("_id")
         if ingredient_id:
             await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
     except Exception:
@@ -94,7 +96,7 @@ async def test_ingredient_2(client: httpx.AsyncClient, api_prefix: str):
     
     # Cleanup: Delete ingredient
     try:
-        ingredient_id = ingredient.get("id")
+        ingredient_id = ingredient.get("_id")
         if ingredient_id:
             await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
     except Exception:
@@ -104,8 +106,8 @@ async def test_ingredient_2(client: httpx.AsyncClient, api_prefix: str):
 @pytest.fixture
 async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient, test_ingredient_2):
     """Create a test dish and clean up after test"""
-    ingredient_id_1 = test_ingredient.get("id")
-    ingredient_id_2 = test_ingredient_2.get("id")
+    ingredient_id_1 = test_ingredient.get("_id")
+    ingredient_id_2 = test_ingredient_2.get("_id")
     
     dish_data = {
         "name": "Test Dish Integration",
@@ -147,7 +149,7 @@ async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient,
     
     # Cleanup: Delete dish
     try:
-        dish_id = dish.get("id")
+        dish_id = dish.get("_id")
         if dish_id:
             await client.delete(f"{api_prefix}/dishes/{dish_id}")
     except Exception:
@@ -157,7 +159,7 @@ async def test_dish(client: httpx.AsyncClient, api_prefix: str, test_ingredient,
 @pytest.fixture
 async def test_menu_cycle(client: httpx.AsyncClient, api_prefix: str, test_dish):
     """Create a test menu cycle and clean up after test"""
-    dish_id = test_dish.get("id")
+    dish_id = test_dish.get("_id")
     
     cycle_data = {
         "name": "Test Menu Cycle Integration",
@@ -188,7 +190,7 @@ async def test_menu_cycle(client: httpx.AsyncClient, api_prefix: str, test_dish)
         
         # Cleanup: Delete menu cycle
         try:
-            cycle_id = cycle.get("id")
+            cycle_id = cycle.get("_id")
             if cycle_id:
                 await client.delete(f"{api_prefix}/menu-cycles/{cycle_id}")
         except Exception:
@@ -205,7 +207,7 @@ async def test_menu_schedule(client: httpx.AsyncClient, api_prefix: str, test_me
         yield None
         return
         
-    cycle_id = test_menu_cycle.get("id")  # This is already a string from the API response
+    cycle_id = test_menu_cycle.get("_id")  # This is already a string from the API response
     
     assignment_data = {
         "menu_cycle_id": cycle_id,  # String ID as expected by MenuScheduleAssignmentRequest
@@ -266,7 +268,7 @@ def sample_ingredient_data():
 @pytest.fixture
 def sample_dish_data(test_ingredient):
     """Sample dish data with valid ingredient ID"""
-    ingredient_id = test_ingredient.get("id") if test_ingredient else str(ObjectId())
+    ingredient_id = test_ingredient.get("_id") if test_ingredient else str(ObjectId())
     
     return {
         "name": "Sample Dish Legacy",
@@ -297,7 +299,7 @@ def sample_dish_data(test_ingredient):
 @pytest.fixture
 def sample_menu_cycle_data(test_dish):
     """Sample menu cycle data with valid dish ID"""
-    dish_id = test_dish.get("id") if test_dish else str(ObjectId())
+    dish_id = test_dish.get("_id") if test_dish else str(ObjectId())
     
     return {
         "name": "Sample Menu Cycle Legacy",
@@ -324,7 +326,7 @@ def sample_menu_cycle_data(test_dish):
 @pytest.fixture
 def sample_nutritional_analysis_data(test_menu_cycle):
     """Sample nutritional analysis data with valid menu cycle ID"""
-    cycle_id = test_menu_cycle.get("id") if test_menu_cycle else str(ObjectId())
+    cycle_id = test_menu_cycle.get("_id") if test_menu_cycle else str(ObjectId())
     
     return {
         "analysis_type": "menu_cycle",
@@ -373,10 +375,10 @@ def test_config():
 # Helper functions for assertions
 def assert_response_has_id(data: Dict[str, Any]) -> str:
     """Assert that response has an ID field and return it"""
-    assert "id" in data, "Response should contain an 'id' field"
-    assert data["id"] is not None, "ID should not be None"
-    assert isinstance(data["id"], str), "ID should be a string"
-    return data["id"]
+    assert "_id" in data, "Response should contain an '_id' field"
+    assert data["_id"] is not None, "ID should not be None"
+    assert isinstance(data["_id"], str), "ID should be a string"
+    return data["_id"]
 
 
 def assert_pagination_response(data: Dict[str, Any], expected_items_key: str = "items"):

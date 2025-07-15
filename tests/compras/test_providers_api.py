@@ -7,6 +7,7 @@ import httpx
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
+from ..test_metadata import add_test_info
 
 
 class TestProvidersAPI:
@@ -14,6 +15,12 @@ class TestProvidersAPI:
     
     # CREATE PROVIDER TESTS
     
+    @add_test_info(
+        description="Crear un proveedor exitosamente con todos los campos requeridos",
+        expected_result="Status Code: 201, datos del proveedor creado",
+        module="Compras",
+        test_id="PRV-001"
+    )
     async def test_create_provider_success(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-001: Successfully create a new provider"""
         provider_data = {
@@ -45,6 +52,12 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider_id}")
 
+    @add_test_info(
+        description="Fallar al crear proveedor con campos requeridos faltantes",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="PRV-002"
+    )
     async def test_create_provider_missing_required_fields(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-002: Fail to create provider with missing required fields"""
         invalid_data = {
@@ -62,6 +75,12 @@ class TestProvidersAPI:
         assert isinstance(data["detail"], list)
         assert any("nit" in str(error) for error in data["detail"])
 
+    @add_test_info(
+        description="Fallar al crear proveedor con email inválido",
+        expected_result="Status Code: 422, error de validación de email",
+        module="Compras",
+        test_id="PRV-003"
+    )
     async def test_create_provider_invalid_email(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-003: Fail to create provider with invalid email format"""
         invalid_data = {
@@ -83,6 +102,12 @@ class TestProvidersAPI:
         assert isinstance(data["detail"], list)
         assert any("email" in str(error) for error in data["detail"])
 
+    @add_test_info(
+        description="Fallar al crear proveedor con NIT duplicado",
+        expected_result="Status Code: 400, error de conflicto",
+        module="Compras",
+        test_id="PRV-004"
+    )
     async def test_create_provider_duplicate_nit(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-004: Fail to create provider with duplicate NIT"""
         provider_data = {
@@ -119,6 +144,12 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider1_id}")
 
+    @add_test_info(
+        description="Fallar al crear proveedor con nombre vacío",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="PRV-005"
+    )
     async def test_create_provider_empty_name(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-005: Fail to create provider with empty name"""
         invalid_data = {
@@ -142,8 +173,14 @@ class TestProvidersAPI:
 
     # READ PROVIDER TESTS
     
+    @add_test_info(
+        description="Obtener proveedor por ID exitosamente",
+        expected_result="Status Code: 200, datos completos del proveedor",
+        module="Compras",
+        test_id="PRV-006"
+    )
     async def test_get_provider_by_id_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-006: Successfully retrieve an existing provider"""
+        """PRV-006: Successfully get provider by ID"""
         provider_data = {
             "name": "Test Provider PRV-006",
             "nit": "900123456-6",
@@ -178,24 +215,42 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider_id}")
 
+    @add_test_info(
+        description="Fallar al obtener proveedor con ID en formato inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="PRV-007"
+    )
     async def test_get_provider_by_id_invalid_format(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-007: Fail to retrieve provider with invalid ID format"""
+        """PRV-007: Fail to get provider with invalid ID format"""
         response = await client.get(f"{api_prefix}/providers/invalid_id")
         
         assert response.status_code == 422
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="Fallar al obtener proveedor que no existe",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-008"
+    )
     async def test_get_provider_by_id_not_found(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-008: Fail to retrieve non-existent provider"""
+        """PRV-008: Fail to get provider that doesn't exist"""
         response = await client.get(f"{api_prefix}/providers/648f8f8f8f8f8f8f8f8f8f8a")
         
         assert response.status_code == 404
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al obtener proveedor eliminado (soft delete)",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-009"
+    )
     async def test_get_provider_soft_deleted(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-009: Fail to retrieve soft-deleted provider"""
+        """PRV-009: Fail to get soft-deleted provider"""
         provider_data = {
             "name": "Test Provider PRV-009",
             "nit": "900123456-9",
@@ -223,8 +278,14 @@ class TestProvidersAPI:
 
     # LIST PROVIDERS TESTS
     
+    @add_test_info(
+        description="Obtener lista de proveedores con paginación por defecto",
+        expected_result="Status Code: 200, lista paginada de proveedores",
+        module="Compras",
+        test_id="PRV-010"
+    )
     async def test_get_providers_list_default_pagination(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-010: Successfully retrieve providers with default pagination"""
+        """PRV-010: Successfully get providers list with default pagination"""
         response = await client.get(f"{api_prefix}/providers/")
         
         assert response.status_code == 200
@@ -233,8 +294,14 @@ class TestProvidersAPI:
         assert "total_count" in data
         assert isinstance(data["providers"], list)
 
+    @add_test_info(
+        description="Obtener lista de proveedores filtrada por proveedores locales",
+        expected_result="Status Code: 200, lista filtrada de proveedores",
+        module="Compras",
+        test_id="PRV-011"
+    )
     async def test_get_providers_list_local_filter(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-011: Successfully retrieve local providers only"""
+        """PRV-011: Successfully get providers list with local filter"""
         response = await client.get(f"{api_prefix}/providers/", params={"is_local_provider": True})
         
         assert response.status_code == 200
@@ -244,8 +311,14 @@ class TestProvidersAPI:
         for provider in data["providers"]:
             assert provider["is_local_provider"] is True
 
+    @add_test_info(
+        description="Obtener lista de proveedores con parámetros de paginación personalizados",
+        expected_result="Status Code: 200, lista paginada según parámetros",
+        module="Compras",
+        test_id="PRV-012"
+    )
     async def test_get_providers_list_with_pagination(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-012: Successfully retrieve providers with pagination"""
+        """PRV-012: Successfully get providers list with custom pagination"""
         response = await client.get(f"{api_prefix}/providers/", params={"skip": 0, "limit": 5})
         
         assert response.status_code == 200
@@ -254,16 +327,28 @@ class TestProvidersAPI:
         assert len(data["providers"]) <= 5
         assert data["page_info"]["page_size"] == 5
 
+    @add_test_info(
+        description="Fallar al obtener lista de proveedores con límite inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="PRV-013"
+    )
     async def test_get_providers_list_invalid_limit(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-013: Fail with invalid limit value"""
+        """PRV-013: Fail to get providers list with invalid limit"""
         response = await client.get(f"{api_prefix}/providers/", params={"limit": 1001})
         
         assert response.status_code == 422
         data = response.json()
         assert_error_response(data)
 
+    @add_test_info(
+        description="Fallar al obtener lista de proveedores con skip inválido",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="PRV-014"
+    )
     async def test_get_providers_list_invalid_skip(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-014: Fail with invalid skip value"""
+        """PRV-014: Fail to get providers list with invalid skip"""
         response = await client.get(f"{api_prefix}/providers/", params={"skip": -1})
         
         assert response.status_code == 422
@@ -272,6 +357,12 @@ class TestProvidersAPI:
 
     # UPDATE PROVIDER TESTS
     
+    @add_test_info(
+        description="Actualizar nombre de proveedor exitosamente",
+        expected_result="Status Code: 200, datos del proveedor actualizado",
+        module="Compras",
+        test_id="PRV-015"
+    )
     async def test_update_provider_name_success(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-015: Successfully update provider name"""
         provider_data = {
@@ -302,8 +393,14 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider_id}")
 
+    @add_test_info(
+        description="Actualizar múltiples campos de proveedor exitosamente",
+        expected_result="Status Code: 200, datos del proveedor con cambios",
+        module="Compras",
+        test_id="PRV-016"
+    )
     async def test_update_provider_multiple_fields_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-016: Successfully update multiple fields"""
+        """PRV-016: Successfully update multiple provider fields"""
         provider_data = {
             "name": "Original Provider PRV-016",
             "nit": "900123456-16",
@@ -338,8 +435,14 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider_id}")
 
+    @add_test_info(
+        description="Fallar al actualizar proveedor que no existe",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-017"
+    )
     async def test_update_provider_not_found(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-017: Fail to update non-existent provider"""
+        """PRV-017: Fail to update provider that doesn't exist"""
         update_data = {"name": "Updated Name"}
         response = await client.put(f"{api_prefix}/providers/648f8f8f8f8f8f8f8f8f8f8a", json=update_data)
         
@@ -347,8 +450,14 @@ class TestProvidersAPI:
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al actualizar proveedor con email inválido",
+        expected_result="Status Code: 422, error de validación de email",
+        module="Compras",
+        test_id="PRV-018"
+    )
     async def test_update_provider_invalid_email(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-018: Fail to update with invalid email"""
+        """PRV-018: Fail to update provider with invalid email"""
         provider_data = {
             "name": "Test Provider PRV-018",
             "nit": "900123456-18",
@@ -374,6 +483,12 @@ class TestProvidersAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/providers/{provider_id}")
 
+    @add_test_info(
+        description="Fallar al actualizar proveedor eliminado (soft delete)",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-019"
+    )
     async def test_update_provider_soft_deleted(self, client: httpx.AsyncClient, api_prefix: str):
         """PRV-019: Fail to update soft-deleted provider"""
         provider_data = {
@@ -404,8 +519,14 @@ class TestProvidersAPI:
 
     # DELETE PROVIDER TESTS
     
+    @add_test_info(
+        description="Eliminar proveedor exitosamente (soft delete)",
+        expected_result="Status Code: 200, confirmación de eliminación",
+        module="Compras",
+        test_id="PRV-020"
+    )
     async def test_delete_provider_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-020: Successfully soft delete a provider"""
+        """PRV-020: Successfully delete provider (soft delete)"""
         provider_data = {
             "name": "Test Provider PRV-020",
             "nit": "900123456-20",
@@ -426,16 +547,28 @@ class TestProvidersAPI:
         
         assert response.status_code == 204
 
+    @add_test_info(
+        description="Fallar al eliminar proveedor que no existe",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-021"
+    )
     async def test_delete_provider_not_found(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-021: Fail to delete non-existent provider"""
+        """PRV-021: Fail to delete provider that doesn't exist"""
         response = await client.delete(f"{api_prefix}/providers/648f8f8f8f8f8f8f8f8f8f8a")
         
         assert response.status_code == 404
         data = response.json()
         assert_error_response(data, "not found")
 
+    @add_test_info(
+        description="Fallar al eliminar proveedor ya eliminado",
+        expected_result="Status Code: 404, proveedor no encontrado",
+        module="Compras",
+        test_id="PRV-022"
+    )
     async def test_delete_provider_already_deleted(self, client: httpx.AsyncClient, api_prefix: str):
-        """PRV-022: Fail to delete already deleted provider"""
+        """PRV-022: Fail to delete provider that's already deleted"""
         provider_data = {
             "name": "Test Provider PRV-022",
             "nit": "900123456-22",

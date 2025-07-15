@@ -4,11 +4,14 @@ Shared configuration for PAE Menus API integration tests
 import os
 from typing import Optional
 
+from ..config import settings
+
+
 class TestConfig:
     """Configuration class for API tests"""
     
     # API Configuration
-    BASE_URL: str = os.getenv("PAE_MENUS_BASE_URL", "http://127.0.0.1:8001")
+    BASE_URL: str = settings.BASE_MENUS_BACKEND_URL
     API_PREFIX: str = "/api/v1"
     TIMEOUT: float = 30.0
     FOLLOW_REDIRECTS: bool = True
