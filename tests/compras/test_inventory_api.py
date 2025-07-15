@@ -135,6 +135,12 @@ class TestInventoryAPI:
         items_key = "inventory_items" if "inventory_items" in data else "items"
         assert items_key in data
 
+    @add_test_info(
+        description="Obtener inventario filtrado por proveedor",
+        expected_result="Status Code: 200, inventario filtrado por proveedor",
+        module="Compras",
+        test_id="INV-008"
+    )
     async def test_get_inventory_by_provider(self, client: httpx.AsyncClient, api_prefix: str, test_provider):
         """INV-008: Successfully retrieve inventory by provider"""
         if not test_provider:
@@ -211,6 +217,12 @@ class TestInventoryAPI:
 
     # INVENTORY THRESHOLD TESTS
     
+    @add_test_info(
+        description="Actualizar umbral de inventario exitosamente",
+        expected_result="Status Code: 200, umbral actualizado",
+        module="Compras",
+        test_id="INV-013"
+    )
     async def test_update_inventory_threshold_success(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """INV-013: Successfully update minimum threshold"""
         if not test_inventory_batch:
@@ -232,6 +244,12 @@ class TestInventoryAPI:
         assert "new_threshold" in data
         assert data["new_threshold"] == 10.0
 
+    @add_test_info(
+        description="Actualizar umbral de inventario a cero",
+        expected_result="Status Code: 200, umbral actualizado a cero",
+        module="Compras",
+        test_id="INV-014"
+    )
     async def test_update_inventory_threshold_zero(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """INV-014: Successfully update threshold to zero"""
         if not test_inventory_batch:
@@ -253,6 +271,12 @@ class TestInventoryAPI:
         assert "new_threshold" in data
         assert data["new_threshold"] == 0.0
 
+    @add_test_info(
+        description="Fallar al actualizar umbral de inventario con valor negativo",
+        expected_result="Status Code: 422, error de validación",
+        module="Compras",
+        test_id="INV-015"
+    )
     async def test_update_inventory_threshold_negative(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
         """INV-015: Fail to update with negative threshold"""
         if not test_inventory_batch:
