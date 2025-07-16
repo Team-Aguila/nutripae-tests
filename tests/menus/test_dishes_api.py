@@ -323,7 +323,7 @@ class TestDishesAPI:
     )
     async def test_update_dish_name_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """DISH-013: Successfully update dish name"""
-        dish_id = test_dish.get("id")
+        dish_id = test_dish.get("_id") or test_dish.get("id")  # API might return _id
         original_name = test_dish["name"]
         
         update_data = {"name": f"Updated {original_name}"}
@@ -332,7 +332,7 @@ class TestDishesAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["name"] == f"Updated {original_name}"
-        assert data["id"] == dish_id
+        assert data["_id"] == dish_id
 
     @add_test_info(
         description="Actualizar receta de plato exitosamente",
@@ -386,11 +386,14 @@ class TestDishesAPI:
     )
     async def test_update_dish_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_ingredient):
         """DISH-016: Fail to update dish with duplicate name"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         ingredient_id = test_ingredient.get("_id")
         
         # Create another dish
         dish_data = {
-            "name": "Another Dish DISH-016",
+            "name": f"Another Dish DISH-016-{unique_suffix}",
             "compatible_meal_types": ["desayuno"],  # Spanish for breakfast
             "recipe": {
                 "ingredients": [
@@ -405,7 +408,7 @@ class TestDishesAPI:
         
         create_response = await client.post(f"{api_prefix}/dishes/", json=dish_data)
         assert create_response.status_code == 201
-        another_dish_id = create_response.json()["id"]
+        another_dish_id = create_response.json()["_id"]
         
         # Try to update it with the test dish's name
         update_data = {"name": test_dish["name"]}
@@ -520,8 +523,8 @@ class TestDishesAPI:
     )
     async def test_update_dish_add_ingredient_to_recipe(self, client: httpx.AsyncClient, api_prefix: str, test_dish, test_ingredient_2):
         """DISH-020: Successfully update dish by adding ingredient to recipe"""
-        dish_id = test_dish.get("id")
-        ingredient_id_2 = test_ingredient_2.get("id")
+        dish_id = test_dish.get("_id") or test_dish.get("id")  # API might return _id
+        ingredient_id_2 = test_ingredient_2.get("_id") or test_ingredient_2.get("id")  # API might return _id
         
         # Get current recipe
         get_response = await client.get(f"{api_prefix}/dishes/{dish_id}")

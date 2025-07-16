@@ -304,16 +304,20 @@ class TestIngredientsAPI:
     )
     async def test_get_ingredients_list_with_category_filter(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-012: Successfully get ingredients list filtered by category"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # First create an ingredient with specific category
         ingredient_data = {
-            "name": "Category Filter Test ING-012",
+            "name": f"Category Filter Test ING-012-{unique_suffix}",
             "base_unit_of_measure": "kg",
             "category": "test_filter_category"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json().get("_id")
+        ingredient_id = create_response.json()["_id"]
+
         
         # Test the filter
         params = {"category": "test_filter_category"}
@@ -337,15 +341,19 @@ class TestIngredientsAPI:
     )
     async def test_get_ingredients_list_with_search(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-013: Successfully get ingredients list with search filter"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # First create an ingredient with specific name
         ingredient_data = {
-            "name": "Unique Search Test Ingredient ING-013",
+            "name": f"Unique Search Test Ingredient ING-013-{unique_suffix}",
             "base_unit_of_measure": "kg"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json().get("_id")
+        ingredient_id = create_response.json()["_id"]
+
         
         # Test the search
         params = {"search": "Unique Search Test"}
@@ -369,27 +377,33 @@ class TestIngredientsAPI:
     )
     async def test_get_active_ingredients_excludes_inactive(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-014: Successfully get active ingredients excluding inactive ones"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create an active ingredient
         active_data = {
-            "name": "Active Ingredient ING-014",
+            "name": f"Active Ingredient ING-014-{unique_suffix}",
             "base_unit_of_measure": "kg",
             "status": "active"
         }
         
         active_response = await client.post(f"{api_prefix}/ingredients/", json=active_data)
         assert active_response.status_code == 201
-        active_id = active_response.json().get("_id")
+
+        active_id = active_response.json()["_id"]
+
         
         # Create an inactive ingredient
         inactive_data = {
-            "name": "Inactive Ingredient ING-014",
+            "name": f"Inactive Ingredient ING-014-{unique_suffix}",
             "base_unit_of_measure": "kg",
             "status": "inactive"
         }
         
         inactive_response = await client.post(f"{api_prefix}/ingredients/", json=inactive_data)
         assert inactive_response.status_code == 201
-        inactive_id = inactive_response.json().get("_id")
+        inactive_id = inactive_response.json()["_id"]
+
         
         # Get active ingredients
         response = await client.get(f"{api_prefix}/ingredients/active")
@@ -419,23 +433,26 @@ class TestIngredientsAPI:
     )
     async def test_update_ingredient_name_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-015: Successfully update ingredient name"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Original Name ING-015",
+            "name": f"Original Name ING-015-{unique_suffix}",
             "base_unit_of_measure": "kg"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Update name
-        update_data = {"name": "Updated Name ING-015"}
+        update_data = {"name": f"Updated Name ING-015-{unique_suffix}"}
         response = await client.put(f"{api_prefix}/ingredients/{ingredient_id}", json=update_data)
         
         assert response.status_code == 200
         data = response.json()
-        assert data["name"] == "Updated Name ING-015"
+        assert data["name"] == f"Updated Name ING-015-{unique_suffix}"
         assert data["base_unit_of_measure"] == "kg"  # Should remain unchanged
         
         # Cleanup
@@ -449,9 +466,13 @@ class TestIngredientsAPI:
     )
     async def test_update_ingredient_multiple_fields_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-016: Successfully update multiple ingredient fields"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        original_name = f"Multi Update Test ING-016-{unique_suffix}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Multi Update Test ING-016",
+            "name": original_name,
             "base_unit_of_measure": "kg",
             "description": "Original description",
             "category": "original_category"
@@ -459,7 +480,7 @@ class TestIngredientsAPI:
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Update multiple fields
         update_data = {
@@ -474,7 +495,7 @@ class TestIngredientsAPI:
         assert data["description"] == "Updated description"
         assert data["category"] == "updated_category"
         assert data["status"] == "inactive"
-        assert data["name"] == "Multi Update Test ING-016"  # Should remain unchanged
+        assert data["name"] == original_name  # Should remain unchanged
         
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -502,28 +523,31 @@ class TestIngredientsAPI:
     )
     async def test_update_ingredient_duplicate_name(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-018: Fail to update ingredient with duplicate name"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create first ingredient
         ingredient1_data = {
-            "name": "First Ingredient ING-018",
+            "name": f"First Ingredient ING-018-{unique_suffix}",
             "base_unit_of_measure": "kg"
         }
         
         response1 = await client.post(f"{api_prefix}/ingredients/", json=ingredient1_data)
         assert response1.status_code == 201
-        ingredient1_id = response1.json()["id"]
+        ingredient1_id = response1.json()["_id"]
         
         # Create second ingredient
         ingredient2_data = {
-            "name": "Second Ingredient ING-018",
+            "name": f"Second Ingredient ING-018-{unique_suffix}",
             "base_unit_of_measure": "g"
         }
         
         response2 = await client.post(f"{api_prefix}/ingredients/", json=ingredient2_data)
         assert response2.status_code == 201
-        ingredient2_id = response2.json()["id"]
+        ingredient2_id = response2.json()["_id"]
         
         # Try to update second ingredient with first ingredient's name
-        update_data = {"name": "First Ingredient ING-018"}
+        update_data = {"name": f"First Ingredient ING-018-{unique_suffix}"}
         response = await client.put(f"{api_prefix}/ingredients/{ingredient2_id}", json=update_data)
         
         assert response.status_code == 400
@@ -542,16 +566,19 @@ class TestIngredientsAPI:
     )
     async def test_inactivate_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-019: Successfully inactivate ingredient"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Inactivate Test ING-019",
+            "name": f"Inactivate Test ING-019-{unique_suffix}",
             "base_unit_of_measure": "kg",
             "status": "active"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Inactivate ingredient
         response = await client.patch(f"{api_prefix}/ingredients/{ingredient_id}/inactivate")
@@ -559,7 +586,7 @@ class TestIngredientsAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "inactive"
-        assert data["id"] == ingredient_id
+        assert data["_id"] == ingredient_id
         
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -572,16 +599,19 @@ class TestIngredientsAPI:
     )
     async def test_activate_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-020: Successfully activate ingredient"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create inactive ingredient
         ingredient_data = {
-            "name": "Activate Test ING-020",
+            "name": f"Activate Test ING-020-{unique_suffix}",
             "base_unit_of_measure": "kg",
             "status": "inactive"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Activate ingredient
         response = await client.patch(f"{api_prefix}/ingredients/{ingredient_id}/activate")
@@ -589,7 +619,7 @@ class TestIngredientsAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "active"
-        assert data["id"] == ingredient_id
+        assert data["_id"] == ingredient_id
         
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -604,15 +634,18 @@ class TestIngredientsAPI:
     )
     async def test_delete_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-021: Successfully delete ingredient"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Delete Test ING-021",
+            "name": f"Delete Test ING-021-{unique_suffix}",
             "base_unit_of_measure": "kg"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Delete ingredient
         response = await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -701,18 +734,22 @@ class TestIngredientsAPI:
     )
     async def test_check_name_uniqueness_taken(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-026: Successfully check name uniqueness - taken"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        test_name = f"Taken Name Check ING-026-{unique_suffix}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Taken Name Check ING-026",
+            "name": test_name,
             "base_unit_of_measure": "kg"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Check if name is taken
-        params = {"name": "Taken Name Check ING-026"}
+        params = {"name": test_name}
         response = await client.head(f"{api_prefix}/ingredients/validate/name-uniqueness", params=params)
         
         assert response.status_code == 409
@@ -728,24 +765,28 @@ class TestIngredientsAPI:
     )
     async def test_get_detailed_ingredient_success(self, client: httpx.AsyncClient, api_prefix: str):
         """ING-027: Successfully get detailed ingredient information"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        detailed_name = f"Detailed Test ING-027-{unique_suffix}"
+        
         # Create ingredient
         ingredient_data = {
-            "name": "Detailed Test ING-027",
+            "name": detailed_name,
             "base_unit_of_measure": "kg",
             "description": "Detailed test ingredient"
         }
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json()["_id"]
         
         # Get detailed ingredient
         response = await client.get(f"{api_prefix}/ingredients/{ingredient_id}/detailed")
         
         assert response.status_code == 200
         data = response.json()
-        assert data["id"] == ingredient_id
-        assert data["name"] == "Detailed Test ING-027"
+        assert data["_id"] == ingredient_id
+        assert data["name"] == detailed_name
         # Should contain additional fields for detailed view
         assert "menu_usage" in data or "usage_count" in data
         
