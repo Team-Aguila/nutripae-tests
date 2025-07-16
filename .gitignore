@@ -9,3 +9,4 @@ __pycache__/
 .coverage.html
 .coverage.json.gz
 .coverage.json.bz2
+*.pdf
