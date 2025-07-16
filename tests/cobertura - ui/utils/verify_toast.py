@@ -10,6 +10,6 @@ def verify_toast_success(driver):
                 "//li[@data-type='success' and @data-visible='true']"
             ))
         )
-        print("✅ Toast de éxito visible.")
+        print("Toast de éxito visible.")
     except:
-        print("❌ No se detectó el toast de éxito.")
+        print("No se detectó el toast de éxito.")
