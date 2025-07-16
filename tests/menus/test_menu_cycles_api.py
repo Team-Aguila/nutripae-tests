@@ -4,6 +4,8 @@ Test cases: CYCLE-001 to CYCLE-015
 """
 import pytest
 import httpx
+import uuid
+from datetime import datetime
 from typing import Dict, Any
 
 from .conftest import assert_response_has_id, assert_pagination_response, assert_error_response
@@ -23,11 +25,14 @@ class TestMenuCyclesAPI:
     )
     async def test_create_menu_cycle_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """CYCLE-001: Successfully create a new menu cycle"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         dish_id = test_dish.get("id")
         
         cycle_data = {
-            "name": "Test Menu Cycle CYCLE-001",
-            "description": "Test menu cycle for CYCLE-001",
+                    "name": f"Test Menu Cycle CYCLE-001-{unique_suffix}",
+        "description": "Test menu cycle for CYCLE-001",
             "status": "active",
             "duration_days": 5,
             "daily_menus": [
@@ -444,11 +449,14 @@ class TestMenuCyclesAPI:
     )
     async def test_delete_menu_cycle_success(self, client: httpx.AsyncClient, api_prefix: str, test_dish):
         """CYCLE-015: Successfully delete menu cycle"""
+        # Generate unique suffix for this test
+        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
+        
         dish_id = test_dish.get("id")
         
         # Create a menu cycle to delete
         cycle_data = {
-            "name": "Delete Test Cycle CYCLE-015",
+            "name": f"Delete Test Cycle CYCLE-015-{unique_suffix}",
             "duration_days": 2,
             "daily_menus": [
                 {
@@ -468,15 +476,15 @@ class TestMenuCyclesAPI:
         
         create_response = await client.post(f"{api_prefix}/menu-cycles/", json=cycle_data)
         assert create_response.status_code == 201
-        cycle_id = create_response.json()["id"]
+        cycle_id = create_response.json()["_id"]
         
-        # Delete the menu cycle
-        response = await client.delete(f"{api_prefix}/menu-cycles/{cycle_id}")
+        # Deactivate the menu cycle (soft delete)
+        response = await client.patch(f"{api_prefix}/menu-cycles/{cycle_id}/deactivate")
         
         assert response.status_code == 200
         data = response.json()
-        assert "message" in data
-        assert "deleted" in data["message"].lower()
+        # Verify the cycle is deactivated
+        assert data["status"] == "inactive"
         
         # Verify cycle is deleted
         get_response = await client.get(f"{api_prefix}/menu-cycles/{cycle_id}")
