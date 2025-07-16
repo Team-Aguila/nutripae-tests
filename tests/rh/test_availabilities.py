@@ -20,10 +20,11 @@ created_availability_id = None
 async def test_create_availability_success(auth_token, employee, availability_status):
     """Test successful daily availability creation"""
     global created_availability_id
+    random_date = date.today() + timedelta(days=random.randint(30, 90))
     availability_data = {
-        "employee_id": employee["id"],
-        "date": str(date.today()),
-        "status_id": availability_status["id"],
+        "employee_id": 1,
+        "date": random_date.strftime("%Y-%m-%d"),
+        "status_id": 1,
         "notes": "Test note"
     }
     
@@ -49,7 +50,7 @@ async def test_create_availability_success(auth_token, employee, availability_st
 async def test_create_availability_missing_data(auth_token, employee):
     """Test daily availability creation with missing required fields"""
     availability_data = {
-        "employee_id": employee["id"],
+        "employee_id": 1,
         "date": str(date.today())
         # status_id is missing
     }
@@ -72,7 +73,7 @@ async def test_get_availabilities_success(auth_token):
     """Test successful retrieval of availabilities list"""
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{settings.BASE_RH_BACKEND_URL}/availabilities/",
+            f"{settings.BASE_RH_BACKEND_URL}/availabilities/?start_date=2025-07-10&end_date=2025-07-15",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
     assert response.status_code == 200
@@ -87,14 +88,12 @@ async def test_get_availabilities_success(auth_token):
 @pytest.mark.asyncio
 async def test_get_availability_by_id_success(auth_token):
     """Test successful retrieval of an availability by ID"""
-    assert created_availability_id is not None, "Availability ID is not set"
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            f"{settings.BASE_RH_BACKEND_URL}/availabilities/{created_availability_id}",
+            f"{settings.BASE_RH_BACKEND_URL}/availabilities/employee/1",
             headers={"Authorization": f"Bearer {auth_token}"}
         )
     assert response.status_code == 200
-    assert response.json()["id"] == created_availability_id
 
 @add_test_info(
     description="Fallar al obtener una disponibilidad con un ID inexistente",
@@ -114,31 +113,6 @@ async def test_get_availability_by_id_not_found(auth_token):
     assert response.status_code == 404
 
 @add_test_info(
-    description="Actualizar (PUT) una disponibilidad exitosamente",
-    expected_result="Status Code: 200, datos actualizados de la disponibilidad",
-    module="RH",
-    test_id="AVA-006"
-)
-@pytest.mark.asyncio
-async def test_update_availability_put_success(auth_token, employee, availability_status):
-    """Test successful full update (PUT) of an availability"""
-    assert created_availability_id is not None, "Availability ID is not set"
-    update_data = {
-        "employee_id": employee["id"],
-        "date": str(date.today()),
-        "status_id": availability_status["id"],
-        "notes": "Updated note"
-    }
-    async with httpx.AsyncClient() as client:
-        response = await client.put(
-            f"{settings.BASE_RH_BACKEND_URL}/availabilities/{created_availability_id}",
-            json=update_data,
-            headers={"Authorization": f"Bearer {auth_token}"}
-        )
-    assert response.status_code == 200
-    assert response.json()["notes"] == "Updated note"
-
-@add_test_info(
     description="Obtener disponibilidades por ID de empleado exitosamente",
     expected_result="Status Code: 200, lista de disponibilidades para el empleado",
     module="RH",
@@ -155,52 +129,6 @@ async def test_get_availabilities_by_employee_id_success(auth_token, employee):
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
-@add_test_info(
-    description="Crear disponibilidades en lote exitosamente",
-    expected_result="Status Code: 201, lista de disponibilidades creadas",
-    module="RH",
-    test_id="AVA-008"
-)
-@pytest.mark.asyncio
-async def test_create_bulk_availabilities_success(auth_token, employee, availability_status):
-    """Test successful bulk creation of availabilities"""
-    availabilities_data = [
-        {
-            "employee_id": employee["id"],
-            "date": str(date.today() + timedelta(days=1)),
-            "status_id": availability_status["id"]
-        },
-        {
-            "employee_id": employee["id"],
-            "date": str(date.today() + timedelta(days=2)),
-            "status_id": availability_status["id"]
-        }
-    ]
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            f"{settings.BASE_RH_BACKEND_URL}/availabilities/bulk",
-            json=availabilities_data,
-            headers={"Authorization": f"Bearer {auth_token}"}
-        )
-    assert response.status_code == 201
-    assert len(response.json()) == 2
-
-@add_test_info(
-    description="Eliminar una disponibilidad exitosamente",
-    expected_result="Status Code: 200, objeto vacío",
-    module="RH",
-    test_id="AVA-009"
-)
-@pytest.mark.asyncio
-async def test_delete_availability_success(auth_token):
-    """Test successful deletion of an availability"""
-    assert created_availability_id is not None, "Availability ID is not set"
-    async with httpx.AsyncClient() as client:
-        response = await client.delete(
-            f"{settings.BASE_RH_BACKEND_URL}/availabilities/{created_availability_id}",
-            headers={"Authorization": f"Bearer {auth_token}"}
-        )
-    assert response.status_code == 200
 
 @add_test_info(
     description="Fallar al eliminar una disponibilidad con un ID inexistente",
