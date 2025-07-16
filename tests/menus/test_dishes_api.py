@@ -271,8 +271,9 @@ class TestDishesAPI:
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        # Check that our test dish is in the results
-        found = any(dish["id"] == test_dish["id"] for dish in data)
+        # Check that our test dish is in the results using defensive field access
+        test_dish_id = test_dish.get("_id") or test_dish.get("id")
+        found = any((dish.get("_id") or dish.get("id")) == test_dish_id for dish in data)
         assert found
 
     @add_test_info(
@@ -426,25 +427,45 @@ class TestDishesAPI:
     # DELETE operations are not implemented in the backend API (405 Method Not Allowed)
     # Commenting out until DELETE endpoint is implemented
     
-    # @add_test_info(
-    #     description="Eliminar plato exitosamente - NO IMPLEMENTADO",
-    #     expected_result="Status Code: 405 Method Not Allowed",
-    #     module="Menús",
-    #     test_id="DISH-017"
-    # )
-    # async def test_delete_dish_success(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
-    #     """DISH-017: DELETE endpoint is not implemented"""
-    #     pass
+    @add_test_info(
+        description="Eliminar plato exitosamente",
+        expected_result="Status Code: 200, plato eliminado",
+        module="Menús",
+        test_id="DISH-017"
+    )
+    async def test_delete_dish_success(self, client: httpx.AsyncClient, api_prefix: str, test_ingredient):
+        """DISH-017: Successfully delete a dish"""
+        ingredient_id = test_ingredient.get("_id") or test_ingredient.get("id")
+        
+        # Create a dish specifically for deletion (to avoid cross-entity validation issues)
+        dish_data = {
+            "name": "Delete Test Dish DISH-017",
+            "compatible_meal_types": ["almuerzo"],
+            "recipe": {
+                "ingredients": [
+                    {
+                        "ingredient_id": ingredient_id,
+                        "quantity": 100.0,
+                        "unit": "g"
+                    }
+                ]
+            }
+        }
+        
+        # Create the dish
+        create_response = await client.post(f"{api_prefix}/dishes/", json=dish_data)
+        assert create_response.status_code == 201
+        dish_id = create_response.json()["_id"]
+        
+        # Delete the dish
+        response = await client.delete(f"{api_prefix}/dishes/{dish_id}")
+        
+        # Should return 200 OK with deletion confirmation
+        assert response.status_code == 200
+        data = response.json()
+        assert "message" in data or "deleted_dish" in data  # Backend confirmation format
 
-    # @add_test_info(
-    #     description="Fallar al eliminar plato que no existe - NO IMPLEMENTADO",
-    #     expected_result="Status Code: 405 Method Not Allowed",
-    #     module="Menús",
-    #     test_id="DISH-018"
-    # )
-    # async def test_delete_dish_not_found(self, client: httpx.AsyncClient, api_prefix: str, non_existent_dish_id):
-    #     """DISH-018: DELETE endpoint is not implemented"""
-    #     pass
+
 
     # COMPLEX RECIPE TESTS
     

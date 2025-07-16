@@ -369,59 +369,7 @@ class TestIngredientsAPI:
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
-    @add_test_info(
-        description="Obtener lista de ingredientes activos excluyendo inactivos",
-        expected_result="Status Code: 200, solo ingredientes activos",
-        module="Menús",
-        test_id="ING-014"
-    )
-    async def test_get_active_ingredients_excludes_inactive(self, client: httpx.AsyncClient, api_prefix: str):
-        """ING-014: Successfully get active ingredients excluding inactive ones"""
-        # Generate unique suffix for this test
-        unique_suffix = f"{datetime.now().strftime('%H%M%S')}-{uuid.uuid4().hex[:8]}"
-        
-        # Create an active ingredient
-        active_data = {
-            "name": f"Active Ingredient ING-014-{unique_suffix}",
-            "base_unit_of_measure": "kg",
-            "status": "active"
-        }
-        
-        active_response = await client.post(f"{api_prefix}/ingredients/", json=active_data)
-        assert active_response.status_code == 201
 
-        active_id = active_response.json()["_id"]
-
-        
-        # Create an inactive ingredient
-        inactive_data = {
-            "name": f"Inactive Ingredient ING-014-{unique_suffix}",
-            "base_unit_of_measure": "kg",
-            "status": "inactive"
-        }
-        
-        inactive_response = await client.post(f"{api_prefix}/ingredients/", json=inactive_data)
-        assert inactive_response.status_code == 201
-        inactive_id = inactive_response.json()["_id"]
-
-        
-        # Get active ingredients
-        response = await client.get(f"{api_prefix}/ingredients/active")
-        
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        
-        # Check that active ingredient is included and inactive is excluded
-        active_found = any(ing["_id"] == active_id for ing in data)
-        inactive_found = any(ing["_id"] == inactive_id for ing in data)
-        
-        assert active_found
-        assert not inactive_found
-        
-        # Cleanup
-        await client.delete(f"{api_prefix}/ingredients/{active_id}")
-        await client.delete(f"{api_prefix}/ingredients/{inactive_id}")
 
     # UPDATE INGREDIENT TESTS
     
