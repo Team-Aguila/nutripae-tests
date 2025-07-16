@@ -317,6 +317,7 @@ class TestIngredientsAPI:
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
         ingredient_id = create_response.json()["_id"]
+
         
         # Test the filter
         params = {"category": "test_filter_category"}
@@ -352,6 +353,7 @@ class TestIngredientsAPI:
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
         ingredient_id = create_response.json()["_id"]
+
         
         # Test the search
         params = {"search": "Unique Search Test"}
@@ -387,7 +389,9 @@ class TestIngredientsAPI:
         
         active_response = await client.post(f"{api_prefix}/ingredients/", json=active_data)
         assert active_response.status_code == 201
+
         active_id = active_response.json()["_id"]
+
         
         # Create an inactive ingredient
         inactive_data = {
@@ -399,6 +403,7 @@ class TestIngredientsAPI:
         inactive_response = await client.post(f"{api_prefix}/ingredients/", json=inactive_data)
         assert inactive_response.status_code == 201
         inactive_id = inactive_response.json()["_id"]
+
         
         # Get active ingredients
         response = await client.get(f"{api_prefix}/ingredients/active")
