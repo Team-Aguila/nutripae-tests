@@ -48,8 +48,9 @@ class TestIngredientsAPI:
         assert_ingredient_response(data, ingredient_data)
         
         # Cleanup
-        ingredient_id = data["id"]
-        await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
+        ingredient_id = data.get("_id")
+        if ingredient_id:
+            await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
 
     @add_test_info(
         description="Fallar al crear ingrediente con campos requeridos faltantes",
@@ -172,7 +173,7 @@ class TestIngredientsAPI:
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
         created_ingredient = create_response.json()
-        ingredient_id = created_ingredient["id"]
+        ingredient_id = created_ingredient["_id"]
         
         # Get the ingredient
         response = await client.get(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -180,7 +181,7 @@ class TestIngredientsAPI:
         assert response.status_code == 200
         data = response.json()
         assert_ingredient_response(data, ingredient_data)
-        assert data["id"] == ingredient_id
+        assert data["_id"] == ingredient_id
         
         # Cleanup
         await client.delete(f"{api_prefix}/ingredients/{ingredient_id}")
@@ -231,7 +232,7 @@ class TestIngredientsAPI:
         assert isinstance(data, list)
         # Check that each item has required fields
         for ingredient in data:
-            assert "id" in ingredient
+            assert "_id" in ingredient
             assert "name" in ingredient
             assert "base_unit_of_measure" in ingredient
             assert "status" in ingredient
@@ -287,7 +288,7 @@ class TestIngredientsAPI:
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json().get("_id")
         
         # Test the filter
         params = {"category": "test_filter_category"}
@@ -297,7 +298,7 @@ class TestIngredientsAPI:
         data = response.json()
         assert isinstance(data, list)
         # Check that at least our created ingredient is returned
-        found = any(ing["id"] == ingredient_id for ing in data)
+        found = any(ing["_id"] == ingredient_id for ing in data)
         assert found
         
         # Cleanup
@@ -319,7 +320,7 @@ class TestIngredientsAPI:
         
         create_response = await client.post(f"{api_prefix}/ingredients/", json=ingredient_data)
         assert create_response.status_code == 201
-        ingredient_id = create_response.json()["id"]
+        ingredient_id = create_response.json().get("_id")
         
         # Test the search
         params = {"search": "Unique Search Test"}
@@ -329,7 +330,7 @@ class TestIngredientsAPI:
         data = response.json()
         assert isinstance(data, list)
         # Check that our created ingredient is returned
-        found = any(ing["id"] == ingredient_id for ing in data)
+        found = any(ing["_id"] == ingredient_id for ing in data)
         assert found
         
         # Cleanup
@@ -352,7 +353,7 @@ class TestIngredientsAPI:
         
         active_response = await client.post(f"{api_prefix}/ingredients/", json=active_data)
         assert active_response.status_code == 201
-        active_id = active_response.json()["id"]
+        active_id = active_response.json().get("_id")
         
         # Create an inactive ingredient
         inactive_data = {
@@ -363,7 +364,7 @@ class TestIngredientsAPI:
         
         inactive_response = await client.post(f"{api_prefix}/ingredients/", json=inactive_data)
         assert inactive_response.status_code == 201
-        inactive_id = inactive_response.json()["id"]
+        inactive_id = inactive_response.json().get("_id")
         
         # Get active ingredients
         response = await client.get(f"{api_prefix}/ingredients/active")
@@ -373,8 +374,8 @@ class TestIngredientsAPI:
         assert isinstance(data, list)
         
         # Check that active ingredient is included and inactive is excluded
-        active_found = any(ing["id"] == active_id for ing in data)
-        inactive_found = any(ing["id"] == inactive_id for ing in data)
+        active_found = any(ing["_id"] == active_id for ing in data)
+        inactive_found = any(ing["_id"] == inactive_id for ing in data)
         
         assert active_found
         assert not inactive_found
