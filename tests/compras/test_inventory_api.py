@@ -59,9 +59,16 @@ class TestInventoryAPI:
         module="Compras",
         test_id="INV-003"
     )
-    async def test_get_inventory_filtered_by_product(self, client: httpx.AsyncClient, api_prefix: str):
+    async def test_get_inventory_filtered_by_product(self, client: httpx.AsyncClient, api_prefix: str, test_product):
         """INV-003: Successfully retrieve inventory filtered by product"""
-        response = await client.get(f"{api_prefix}/inventory", params={"product_id": "648f8f8f8f8f8f8f8f8f8f8f"})
+        if not test_product:
+            pytest.skip("No test product available for filtering test")
+        
+        product_id = test_product.get("_id")
+        if not product_id:
+            pytest.skip("No product_id available for filtering test")
+        
+        response = await client.get(f"{api_prefix}/inventory", params={"product_id": product_id})
         
         assert response.status_code == 200
         data = response.json()
@@ -134,9 +141,16 @@ class TestInventoryAPI:
         module="Compras",
         test_id="INV-008"
     )
-    async def test_get_inventory_by_provider(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-008: Successfully retrieve inventory filtered by provider"""
-        response = await client.get(f"{api_prefix}/inventory", params={"provider_id": "648f8f8f8f8f8f8f8f8f8f8f"})
+    async def test_get_inventory_by_provider(self, client: httpx.AsyncClient, api_prefix: str, test_provider):
+        """INV-008: Successfully retrieve inventory by provider"""
+        if not test_provider:
+            pytest.skip("No test provider available for filtering test")
+        
+        provider_id = test_provider.get("_id")
+        if not provider_id:
+            pytest.skip("No provider_id available for filtering test")
+        
+        response = await client.get(f"{api_prefix}/inventory", params={"provider_id": provider_id})
         
         assert response.status_code == 200
         data = response.json()
@@ -209,10 +223,17 @@ class TestInventoryAPI:
         module="Compras",
         test_id="INV-013"
     )
-    async def test_update_inventory_threshold_success(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-013: Successfully update inventory threshold"""
+    async def test_update_inventory_threshold_success(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
+        """INV-013: Successfully update minimum threshold"""
+        if not test_inventory_batch:
+            pytest.skip("No inventory batch available for threshold test")
+        
+        inventory_id = test_inventory_batch.get("inventory_batch_id")
+        if not inventory_id:
+            pytest.skip("No inventory_batch_id available for threshold test")
+        
         response = await client.put(
-            f"{api_prefix}/inventory/686c6e059d212a3310b869be/threshold",
+            f"{api_prefix}/inventory/{inventory_id}/threshold",
             params={"new_threshold": 10.0}
         )
         
@@ -229,10 +250,17 @@ class TestInventoryAPI:
         module="Compras",
         test_id="INV-014"
     )
-    async def test_update_inventory_threshold_zero(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-014: Successfully update inventory threshold to zero"""
+    async def test_update_inventory_threshold_zero(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
+        """INV-014: Successfully update threshold to zero"""
+        if not test_inventory_batch:
+            pytest.skip("No inventory batch available for threshold test")
+        
+        inventory_id = test_inventory_batch.get("inventory_batch_id")
+        if not inventory_id:
+            pytest.skip("No inventory_batch_id available for threshold test")
+        
         response = await client.put(
-            f"{api_prefix}/inventory/686c6e059d212a3310b869be/threshold",
+            f"{api_prefix}/inventory/{inventory_id}/threshold",
             params={"new_threshold": 0.0}
         )
         
@@ -249,10 +277,17 @@ class TestInventoryAPI:
         module="Compras",
         test_id="INV-015"
     )
-    async def test_update_inventory_threshold_negative(self, client: httpx.AsyncClient, api_prefix: str):
-        """INV-015: Fail to update inventory threshold with negative value"""
+    async def test_update_inventory_threshold_negative(self, client: httpx.AsyncClient, api_prefix: str, test_inventory_batch):
+        """INV-015: Fail to update with negative threshold"""
+        if not test_inventory_batch:
+            pytest.skip("No inventory batch available for negative threshold test")
+        
+        inventory_id = test_inventory_batch.get("inventory_batch_id")
+        if not inventory_id:
+            pytest.skip("No inventory_batch_id available for negative threshold test")
+        
         response = await client.put(
-            f"{api_prefix}/inventory/648f8f8f8f8f8f8f8f8f8f8f/threshold",
+            f"{api_prefix}/inventory/{inventory_id}/threshold",
             params={"new_threshold": -5.0}
         )
         
