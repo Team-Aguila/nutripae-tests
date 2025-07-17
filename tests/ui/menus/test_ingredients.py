@@ -453,6 +453,7 @@ class TestIngredientsUI:
 
         rows_btn = IngredientsLocators.ACTION_DELETE_BUTTON.find_elements(self.driver)
         assert len(rows_btn) > 0, "No hay filas en la tabla de ingredientes"
+        total_rows = len(rows_btn)
 
         # Tomar el primer ingrediente y hacer clic en eliminar
         first_row_btn = rows_btn[0]
@@ -486,7 +487,6 @@ class TestIngredientsUI:
         assert (
             len(rows) >= 0
         ), "No hay filas en la tabla de ingredientes después de eliminar"
-        for row in rows:
-            assert (
-                f"Test Ingrediente {self.TIMESTAMP}" not in row.text
-            ), "El ingrediente eliminado aún aparece en la tabla"
+        assert (
+            len(rows) == total_rows - 1
+        ), "El número de filas en la tabla no ha disminuido correctamente después de eliminar"

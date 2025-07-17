@@ -1,0 +1,68 @@
+{
+    "tests/ui/menus/test_ingredients.py::test_ingredients_page_loads": {
+        "description": "Verificar que la p\u00e1gina de ingredientes carga correctamente",
+        "expected_result": "La p\u00e1gina de ingredientes debe cargar sin errores",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-001"
+    },
+    "tests/ui/menus/test_ingredients.py::test_add_ingredient_button": {
+        "description": "Verificar la creacion del bot\u00f3n de agregar ingrediente",
+        "expected_result": "El bot\u00f3n de agregar ingrediente debe estar visible",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-002"
+    },
+    "tests/ui/menus/test_ingredients.py::test_ingredient_appears_in_table": {
+        "description": "Verificar que el ingrediente es visible en la tabla despu\u00e9s de agregarlo",
+        "expected_result": "El ingrediente debe aparecer en la tabla de ingredientes",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-003"
+    },
+    "tests/ui/menus/test_ingredients.py::test_ingredient_form_validation": {
+        "description": "Verificar funcionalidad de validaci\u00f3n del formulario",
+        "expected_result": "El formulario debe mostrar errores cuando los campos requeridos est\u00e1n vac\u00edos",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-004"
+    },
+    "tests/ui/menus/test_ingredients.py::test_toggle_ingredient_active_state": {
+        "description": "Verificar que los botones de activar/desactivar funcionan correctamente",
+        "expected_result": "Los botones de activar/desactivar deben cambiar el estado del ingrediente",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-005"
+    },
+    "tests/ui/menus/test_ingredients.py::test_delete_ingredient": {
+        "description": "Verificar que el bot\u00f3n de eliminar ingrediente funciona correctamente",
+        "expected_result": "El ingrediente debe eliminarse de la lista despu\u00e9s de confirmar",
+        "module": "Men\u00fas - UI",
+        "test_id": "INGREDIENTS-UI-006"
+    },
+    "tests/ui/menus/test_dishes.py::test_dish_page_loads": {
+        "description": "Verifica que la p\u00e1gina de platos carga correctamente",
+        "expected_result": "La p\u00e1gina de platos se carga sin errores",
+        "module": "Men\u00fas - UI",
+        "test_id": "DISHES-UI-001"
+    },
+    "tests/ui/menus/test_dishes.py::test_add_dish_button": {
+        "description": "Verificar la creaci\u00f3n del bot\u00f3n de agregar plato",
+        "expected_result": "El bot\u00f3n de agregar plato debe estar visible y funcional",
+        "module": "Men\u00fas - UI",
+        "test_id": "DISHES-UI-002"
+    },
+    "tests/ui/menus/test_dishes.py::test_dish_appears_in_table": {
+        "description": "Verificar que el plato es visible en la tabla despu\u00e9s de agregarlo",
+        "expected_result": "El plato debe aparecer en la tabla de platos",
+        "module": "Men\u00fas - UI",
+        "test_id": "DISHES-UI-003"
+    },
+    "tests/ui/menus/test_dishes.py::test_dish_form_validation": {
+        "description": "Verificar funcionalidad de validaci\u00f3n del formulario de platos",
+        "expected_result": "El formulario debe mostrar errores cuando los campos requeridos est\u00e1n vac\u00edos",
+        "module": "Men\u00fas - UI",
+        "test_id": "DISHES-UI-004"
+    },
+    "tests/ui/menus/test_dishes.py::test_toggle_dish_active_state": {
+        "description": "Verificar que los botones de activar/desactivar platos funcionan correctamente",
+        "expected_result": "Los botones de activar/desactivar deben cambiar el estado del plato",
+        "module": "Men\u00fas - UI",
+        "test_id": "DISHES-UI-005"
+    }
+}
