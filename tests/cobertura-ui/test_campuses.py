@@ -172,7 +172,7 @@ class TestCampusesUI:
         )
 
         opcion_ie = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Aguilar Ltd']"))
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Angulo-Bolívar']"))
         )
         opcion_ie.click()
         save_button = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
@@ -229,7 +229,7 @@ class TestCampusesUI:
         )
 
         opcion_ie = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Parra Inc']"))
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Castillo Inc']"))
         )
         opcion_ie.click()
         save_button = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
