@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-07-15 21:34:15",
+  "url": "http://localhost:5173/login",
+  "selectors": {
+    "boton_agregar_empleado": [
+      "//button[contains(text(), 'Agregar Empleado')]",
+      "button:contains('Agregar Empleado')",
+      "[data-testid='add-employee-btn']"
+    ],
+    "campos_formulario": {
+      "document_number": "input[id='document_number']",
+      "full_name": "input[id='full_name']",
+      "birth_date": "input[id='birth_date']",
+      "hire_date": "input[id='hire_date']",
+      "address": "input[id='address']",
+      "phone_number": "input[id='phone_number']",
+      "personal_email": "input[id='personal_email']",
+      "emergency_contact_name": "input[id='emergency_contact_name']",
+      "emergency_contact_phone": "input[id='emergency_contact_phone']",
+      "emergency_contact_relation": "input[id='emergency_contact_relation']",
+      "identity_document_path": "input[id='identity_document_path']"
+    },
+    "selects": {
+      "document_type": "[data-radix-select-trigger]:nth-of-type(1)",
+      "gender": "[data-radix-select-trigger]:nth-of-type(2)",
+      "operational_role": "[data-radix-select-trigger]:nth-of-type(3)"
+    },
+    "botones_formulario": {
+      "guardar": "//button[contains(text(), 'Guardar')]",
+      "cancelar": "//button[contains(text(), 'Cancelar')]"
+    },
+    "acciones_tabla": {
+      "menu_acciones": "button:contains('...')",
+      "editar": "//div[contains(text(), 'Editar')]",
+      "eliminar": "//div[contains(text(), 'Eliminar')]"
+    }
+  }
+}

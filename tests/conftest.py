@@ -52,5 +52,30 @@ async def auth_token():
         except httpx.HTTPStatusError as e:
             pytest.fail(f"Authentication failed with status {e.response.status_code}: {e.response.text}")
 
+@pytest.fixture(scope="session")
+async def basic_user_token():
+    """Logs in as a basic user and retrieves an authentication token."""
+    login_data = {
+        "email": settings.BASE_USER_EMAIL,
+        "password": settings.BASE_USER_PASSWORD,
+    }
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                f"{settings.BASE_AUTH_BACKEND_URL}/auth/login",
+                json=login_data,
+                timeout=20,
+            )
+            response.raise_for_status()
+            token_data = response.json()
+            if "access_token" not in token_data:
+                pytest.fail("'access_token' not found in login response for basic user.")
+            return token_data["access_token"]
+        except (httpx.RequestError, KeyError) as e:
+            pytest.fail(f"Basic user authentication failed: Could not retrieve auth token. Error: {e}")
+        except httpx.HTTPStatusError as e:
+            pytest.fail(f"Basic user authentication failed with status {e.response.status_code}: {e.response.text}")
+
+
 # Import fixtures from other conftest files to make them available globally if needed
 # Example: from tests.menus.conftest import some_fixture 

@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List
 from bson import ObjectId
 
 from .config import TestConfig
+from tests.conftest import auth_token
 
 
 async def get_auth_token() -> str:
@@ -164,7 +165,6 @@ async def test_inventory_batch(client: httpx.AsyncClient, api_prefix: str, test_
     response = await client.post(f"{api_prefix}/inventory-movements/receive-inventory", json=receipt_data)
     if response.status_code == 201:
         receipt_result = response.json()
-        # Use inventory_id from the response (API returns inventory_id, not inventory_batch_id)
         inventory_id = receipt_result.get("inventory_id") or receipt_result.get("inventory_batch_id")
         yield {
             "inventory_batch_id": inventory_id,
@@ -350,7 +350,6 @@ def test_config():
 # Helper functions for common assertions
 def assert_response_has_id(data: Dict[str, Any]) -> str:
     """Assert response has an ID field and return it"""
-    # The API returns _id field, not id field as expected from the response model
     assert "_id" in data, "Response should contain an _id field"
     id_value = data.get("_id")
     assert id_value is not None, "ID field should not be None"
