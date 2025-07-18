@@ -144,7 +144,7 @@ class TestDepartmentsUI:
         dialog = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "radix-«rb»"))  # Ajusta el ID si es dinámico o diferente
         )
-        assert dialog.is_displayed(), "El diálogo de creación de departamento no se muestra"
+        assert dialog.is_displayed(), "El diálogo de creación de institución no se muestra"
 
         # Llenar campos del formulario
         name_input = WebDriverWait(self.driver, 10).until(
