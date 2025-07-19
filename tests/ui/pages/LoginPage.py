@@ -1,5 +1,5 @@
 import logging
-from .BasePage import BasePage
+from tests.ui.pages.BasePage import BasePage
 from selenium import webdriver
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By

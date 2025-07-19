@@ -1,11 +1,12 @@
 import pytest
 import logging
 import time
+from typing import Tuple
 
-from ..pages.BasePage import BasePage
-from ..pages.LoginPage import LoginPage
-from .BaseTest import BaseTest
-from ...test_metadata import add_test_info
+from tests.ui.pages.BasePage import BasePage
+from tests.ui.pages.LoginPage import LoginPage
+from tests.ui.rh.BaseTest import BaseTest
+from tests.test_metadata import add_test_info
 
 
 class TestLoginUI:
