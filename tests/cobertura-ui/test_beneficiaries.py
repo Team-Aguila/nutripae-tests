@@ -97,7 +97,11 @@ class TestBeneficiariesUI:
 
         beneficiarios_link = cls.driver.find_element(By.XPATH, "//a[.//span[text()='Beneficiarios']]")
         beneficiarios_link.click()
-
+    @classmethod
+    def teardown_class(cls):
+        """Cerrar el navegador al finalizar todas las pruebas de la clase."""
+        if cls.driver:
+            cls.driver.quit()
     @add_test_info(
         description="Verificar que la página de Beneficiarios carga correctamente",
         expected_result="La página de Beneficiarios debe cargar sin errores",
@@ -408,7 +412,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-008",
     )
-    def test_filter_beneficiaries_gender(self):
+    def test_filter_beneficiaries_grade(self):
         """Verificar que el filtro de grado de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
         # Esperar a que la página cargue
@@ -476,12 +480,4 @@ class TestBeneficiariesUI:
             ))
         )
 
-        menu_button.click()
-
-        # Clic en "Editar"
-        editar_option = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='menuitem' and normalize-space()='Editar']"))
-        )
-        editar_option.click()
         ### QUEDO POR TERMINAR ESTE DE ACÁ YA QUE COMO NO SE PUEDE ELIMINAR ENTONCES SI LO EDITO SE VA A QUEDAR ASÍ Y AL RE EJECUTARLO LAS PRUEBAS VAN A DAR ERRONEAS
-        
