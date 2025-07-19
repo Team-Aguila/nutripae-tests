@@ -116,6 +116,7 @@ class TestDepartmentsUI:
         module="Cobertura - UI",
         test_id="INSTITUTIONS-UI-001",
     )
+    @pytest.mark.order(83)
     def test_departments_page_loads(self):
         """Verificar que la página de Instituciones carga correctamente"""
         # Verificar que el título de la página es correcto
@@ -131,6 +132,7 @@ class TestDepartmentsUI:
         module="Cobertura - UI",
         test_id="INSTITUTIONS-UI-002",
     )
+    @pytest.mark.order(84)
     def test_add_institution_button(self):
         """Verificar que el botón de agregar Institucion está visible y funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/institutions")  # Ajusta la URL si es diferente
@@ -181,6 +183,7 @@ class TestDepartmentsUI:
         module="Cobertura - UI",
         test_id="INSTITUTIONS-UI-003",
         )
+    @pytest.mark.order(85)
     def test_edit_institution_button(self):
         """Verificar que se puede editar un departamento correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/institutions")
@@ -222,6 +225,7 @@ class TestDepartmentsUI:
         module="Cobertura - UI",
         test_id="INSTITUTIONS-UI-004",
     )
+    @pytest.mark.order(86)
     def test_delete_departamento_button(self):
         """Verificar que se puede eliminar un departamento correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/institutions")  # Ajusta si es necesario

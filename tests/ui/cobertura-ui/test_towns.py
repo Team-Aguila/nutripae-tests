@@ -105,6 +105,7 @@ class TestTownsUI:
         module="Cobertura - UI",
         test_id="TOWNS-UI-001",
     )
+    @pytest.mark.order(79)
     def test_departments_page_loads(self):
         """Verificar que la página de municipios carga correctamente"""
         # Verificar que el título de la página es correcto
@@ -120,6 +121,7 @@ class TestTownsUI:
         module="Cobertura - UI",
         test_id="TOWNS-UI-002",
     )
+    @pytest.mark.order(80)
     def test_add_municipio_button(self):
         """Verificar que el botón de agregar municipio funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/towns")
@@ -175,6 +177,7 @@ class TestTownsUI:
         module="Cobertura - UI",
         test_id="TOWNS-UI-003",
     )
+    @pytest.mark.order(81)
     def test_edit_municipio(self):
         """Verificar que el municipio editado se muestra en la lista"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/towns")
@@ -228,6 +231,7 @@ class TestTownsUI:
         module="Cobertura - UI",
         test_id="TOWNS-UI-004",
     )
+    @pytest.mark.order(82)
     def test_delete_municipio(self):
         """Verificar que el municipio elminiado no aparece en la lista"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/towns")

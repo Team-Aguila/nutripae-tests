@@ -108,6 +108,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-001",
     )
+    @pytest.mark.order(91)    
     def test_beneficiarios_page_load(self):
         """Verificar que la página de Beneficiarios carga correctamente"""
         # Verificar que el título de la página es correcto
@@ -122,6 +123,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-002",
     )
+    @pytest.mark.order(92)
     def test_add_beneficiaries_button(self):
         """Verificar que el botón de añadir Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")  # Ajusta la URL si es diferente
@@ -243,6 +245,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-003",
     )
+    @pytest.mark.order(93)
     def test_filter_beneficiaries_by_full_name(self):
         """Verificar que el filtro de Nombre completo de Beneficiarios funciona correctamente"""
 
@@ -278,6 +281,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-004",
     )
+    @pytest.mark.order(94)
     def test_filter_beneficiaries_document(self):
         """Verificar que el filtro de Documento de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
@@ -307,6 +311,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-005",
     )
+    @pytest.mark.order(95)
     def test_filter_beneficiaries_identy_document(self):
         """Verificar que el filtro de Documento de identidad de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
@@ -342,6 +347,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-006",
     )
+    @pytest.mark.order(96)
     def test_filter_beneficiaries_gender(self):
         """Verificar que el filtro de genero de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
@@ -377,6 +383,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-007",
     )
+    @pytest.mark.order(97)
     def test_filter_beneficiaries_gender(self):
         """Verificar que el filtro de grado de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
@@ -412,6 +419,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-008",
     )
+    @pytest.mark.order(98)
     def test_filter_beneficiaries_grade(self):
         """Verificar que el filtro de grado de Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")
@@ -447,6 +455,7 @@ class TestBeneficiariesUI:
         module="Cobertura - UI",
         test_id="BENEFICIARIES-UI-009",
     )
+    @pytest.mark.order(99)
     def test_eddit_beneficiaries_button(self):
         """Verificar que se puede editar a un perfil en Beneficiarios funciona correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/beneficiaries")

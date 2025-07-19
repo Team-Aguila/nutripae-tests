@@ -30,8 +30,9 @@ def run_all_tests():
         'tests/cobertura/',
         "tests/compras/",
         "tests/menus/",
-        "tests/ui/menus/",,
-        'tests/rh/'
+        "tests/ui/menus/",
+        'tests/rh/',
+        'tests/ui/cobertura-ui'
     ]
 
     # Filtrar solo las rutas que existen

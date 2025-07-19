@@ -116,6 +116,7 @@ class TestCampusesUI:
         module="Cobertura - UI",
         test_id="CAMPUSES-UI-001",
     )
+    @pytest.mark.order(87)
     def test_campuses_page_load(self):
         """Verificar que la página de Sedes carga correctamente"""
         # Verificar que el título de la página es correcto
@@ -130,6 +131,7 @@ class TestCampusesUI:
         module="Cobertura - UI",
         test_id="CAMPUSES-UI-002",
     )
+    @pytest.mark.order(88)
     def test_add_campuses_button(self):
         """Verificar que se puede abrir el modal de creación de Sedes"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/campuses")  # Ajusta la URL si es diferente
@@ -184,6 +186,7 @@ class TestCampusesUI:
         module="Cobertura - UI",
         test_id="CAMPUSES-UI-003",
     )
+    @pytest.mark.order(89)
     def test_edit_campuses(self):
         """Verificar que se puede editar una Sede correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/campuses")
@@ -241,6 +244,7 @@ class TestCampusesUI:
         module="Cobertura - UI",
         test_id="CAMPUSES-UI-004",
     )
+    @pytest.mark.order(90)
     def test_delete_campuses(self):
         """Verificar que se puede eliminar una Sede correctamente"""
         self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/campuses")
