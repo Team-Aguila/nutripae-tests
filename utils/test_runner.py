@@ -26,11 +26,14 @@ def run_all_tests():
 
     # Ejecutar tests de todos los servicios
     test_paths = [
-        'tests/auth/',
-        'tests/compras/', 
-        'tests/menus/'
+        "tests/auth/",
+        'tests/cobertura/',
+        "tests/compras/",
+        "tests/menus/",
+        "tests/ui/menus/",,
+        'tests/rh/'
     ]
-    
+
     # Filtrar solo las rutas que existen
     existing_paths = []
     for path in test_paths:
