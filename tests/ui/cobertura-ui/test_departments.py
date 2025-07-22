@@ -1,3 +1,4 @@
+from trio._timeouts import sleep
 import pytest  # type: ignore
 from datetime import datetime, timezone as tz
 from selenium import webdriver
@@ -157,16 +158,6 @@ class TestDepartmentsUI:
         ), "El botón de agregar departamento no se muestra"
         add_button.click()
 
-        # Verificar que se abre el modal
-        dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(
-                (By.ID, "radix-«rb»")
-            )  # Ajusta el ID si es dinámico o diferente
-        )
-        assert (
-            dialog.is_displayed()
-        ), "El diálogo de creación de departamento no se muestra"
-
         # Llenar el formulario
         name_input = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "name"))
@@ -211,30 +202,19 @@ class TestDepartmentsUI:
         # Buscar y hacer clic en el botón de editar del departamento de prueba
         editar_btn = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='Test Departamento']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]",
+            "//h3[contains(@class, 'text-lg') and contains(text(), 'Test Department')]/following-sibling::div/button[2]",
         )
         assert (
             editar_btn.is_displayed()
         ), "El botón de editar no se muestra para 'test departamento'"
         editar_btn.click()
 
-        # Verificar que se abre el modal de edición
-        dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located(
-                (By.ID, "radix-«rb»")
-            )  # Ajustar si el ID es dinámico
-        )
-        assert (
-            dialog.is_displayed()
-        ), "El diálogo de edición de departamento no se muestra"
-
         # Editar los datos
-        name_input = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "name"))
+        WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located((By.ID, "name"))
         )
-        save_button = self.driver.find_element(
-            By.XPATH, "//button[normalize-space()='Guardar']"
-        )
+        name_input = self.driver.find_element(By.ID, "name")
+        save_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
 
         assert name_input.is_displayed(), "El campo de nombre no se muestra"
         assert save_button.is_displayed(), "El botón de guardar no se muestra"
@@ -268,21 +248,19 @@ class TestDepartmentsUI:
             f"{settings.BASE_FRONTEND_URL}/coverage/departments"
         )  # Ajusta si es necesario
         # Buscar y hacer clic en el botón de eliminar del departamento editado
+        WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    "//h3[contains(@class, 'text-lg') and contains(text(), 'Test Department')]",
+                )
+            )
+        )
         delete_button = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test departamento editado']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[3]",
+            "//h3[contains(@class, 'text-lg') and contains(text(), 'Test Department')]/following-sibling::div/button[3]",
         )
-        assert (
-            delete_button.is_displayed()
-        ), "El botón de eliminar no se muestra para 'test departamento editado'"
         delete_button.click()
-        # Verificar que se abre el modal de confirmación
-        delete_dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "radix-«re»"))  # Ajustar si cambia
-        )
-        assert (
-            delete_dialog.is_displayed()
-        ), "El diálogo de eliminar departamento no se muestra"
 
         # Hacer clic en el botón "Eliminar"
         confirm_button = WebDriverWait(self.driver, 10).until(

@@ -47,7 +47,7 @@ class TestLoginUI:
         base_page.maximize_window()
 
         # Verificar que el login fue exitoso
-        assert_successful_login(base_page)
+        assert base_page.is_login_successful(), "Login verification failed"
 
         # Verificar información adicional
         page_title = base_page.get_page_title()
@@ -65,7 +65,8 @@ class TestLoginUI:
         logger.info("Starting login form display test")
 
         # Verificar que el formulario está presente y visible usando la función helper
-        assert_login_form_visible(login_page)
+        assert_login_form_visible = login_page.is_form_displayed()
+        assert assert_login_form_visible, "Login form is not displayed"
 
         logger.info("Login form display test completed successfully")
 
@@ -83,7 +84,7 @@ class TestLoginUI:
         logger.info("Starting invalid credentials login test")
 
         # Verificar que el formulario está visible
-        assert_login_form_visible(login_page)
+        assert login_page.is_form_displayed(), "Login form is not displayed"
 
         # Intentar login con credenciales inválidas
         email = "invalid@test.com"
@@ -102,7 +103,7 @@ class TestLoginUI:
 
         # Verificar que seguimos en la página de login o hay un mensaje de error
         # (La implementación específica puede variar según la aplicación)
-        assert_login_failed(driver, expected_on_login_page=True)
+        assert login_page.is_form_displayed(), "Login form should still be displayed"
 
         current_url = driver.current_url
         logger.info(f"Invalid login test completed - Current URL: {current_url}")

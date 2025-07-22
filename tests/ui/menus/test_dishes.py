@@ -410,6 +410,7 @@ class TestDishesUI:
         assert len(rows) > 0, "No hay platos en la tabla"
 
         # Abrir las acciones del primer plato
+        DishesLocators.DATA_TABLE_ACTION_OPEN_BTN.wait_until_visible(self.driver)
         action_buttons = DishesLocators.DATA_TABLE_ACTION_OPEN_BTN.find_elements(
             self.driver
         )
@@ -417,6 +418,8 @@ class TestDishesUI:
         action_buttons[0].click()
 
         # Verificar que el botón de desactivar está presente
+        DishesLocators.ACTION_DISABLE_BUTTON.wait_until_visible(self.driver)
+        DishesLocators.ACTION_DISABLE_BUTTON.wait_until_clickable(self.driver)
         disable_button = DishesLocators.ACTION_DISABLE_BUTTON.find_element(self.driver)
         assert disable_button.is_displayed(), "Botón de desactivar no visible"
 

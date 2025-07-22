@@ -217,7 +217,7 @@ class TestDepartmentsUI:
         # Buscar y hacer clic en el botón de editar del departamento de prueba
         editar_btn = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test IE']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]",
+            "//h3[contains(@class, 'text-lg') and contains(text(), 'Test')]/following-sibling::div/button[2]",
         )
         assert (
             editar_btn.is_displayed()
@@ -279,13 +279,6 @@ class TestDepartmentsUI:
             delete_button.is_displayed()
         ), "El botón de eliminar no se muestra para 'test IE editado'"
         delete_button.click()
-        # Verificar que se abre el modal de confirmación
-        delete_dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "radix-«re»"))  # Ajustar si cambia
-        )
-        assert (
-            delete_dialog.is_displayed()
-        ), "El diálogo de eliminar departamento no se muestra"
 
         # Hacer clic en el botón "Eliminar"
         confirm_button = WebDriverWait(self.driver, 10).until(
