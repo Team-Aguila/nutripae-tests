@@ -238,7 +238,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verifica que la página de platos carga correctamente",
         expected_result="La página de platos se carga sin errores",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-001",
     )
     @pytest.mark.order(7)
@@ -255,7 +255,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar la creación del botón de agregar plato",
         expected_result="El botón de agregar plato debe estar visible y funcional",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-002",
     )
     @pytest.mark.order(8)
@@ -339,7 +339,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar que el plato es visible en la tabla después de agregarlo",
         expected_result="El plato debe aparecer en la tabla de platos",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-003",
     )
     @pytest.mark.order(9)
@@ -357,7 +357,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar funcionalidad de validación del formulario de platos",
         expected_result="El formulario debe mostrar errores cuando los campos requeridos están vacíos",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-004",
     )
     @pytest.mark.order(10)
@@ -394,7 +394,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar que los botones de activar/desactivar platos funcionan correctamente",
         expected_result="Los botones de activar/desactivar deben cambiar el estado del plato",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-005",
     )
     @pytest.mark.order(11)
@@ -410,6 +410,7 @@ class TestDishesUI:
         assert len(rows) > 0, "No hay platos en la tabla"
 
         # Abrir las acciones del primer plato
+        DishesLocators.DATA_TABLE_ACTION_OPEN_BTN.wait_until_visible(self.driver)
         action_buttons = DishesLocators.DATA_TABLE_ACTION_OPEN_BTN.find_elements(
             self.driver
         )
@@ -417,6 +418,8 @@ class TestDishesUI:
         action_buttons[0].click()
 
         # Verificar que el botón de desactivar está presente
+        DishesLocators.ACTION_DISABLE_BUTTON.wait_until_visible(self.driver)
+        DishesLocators.ACTION_DISABLE_BUTTON.wait_until_clickable(self.driver)
         disable_button = DishesLocators.ACTION_DISABLE_BUTTON.find_element(self.driver)
         assert disable_button.is_displayed(), "Botón de desactivar no visible"
 

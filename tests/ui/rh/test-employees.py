@@ -14,10 +14,12 @@ from selenium.webdriver.support import expected_conditions as EC
 import re
 from selenium.common.exceptions import StaleElementReferenceException
 
-DEFAULT_TIMEOUT = 40 #Tiempo por defecto para esperas
+DEFAULT_TIMEOUT = 40  # Tiempo por defecto para esperas
+
 
 class EmployeesLocators(Enum):
     """Enum de locators para elementos de la página de empleados"""
+
     # Login page
     LOGIN_EMAIL = (By.CSS_SELECTOR, "[name='email']")
     LOGIN_PASSWORD = (By.CSS_SELECTOR, "[name='password']")
@@ -44,47 +46,62 @@ class EmployeesLocators(Enum):
     def find_element(self, driver: webdriver.Chrome):
         return driver.find_element(self.by, self.selector)
 
-    def wait_until_present(self, driver: webdriver.Chrome, timeout: int = DEFAULT_TIMEOUT):
+    def wait_until_present(
+        self, driver: webdriver.Chrome, timeout: int = DEFAULT_TIMEOUT
+    ):
         return WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((self.by, self.selector))
         )
 
-    def wait_until_clickable(self, driver: webdriver.Chrome, timeout: int = DEFAULT_TIMEOUT):
+    def wait_until_clickable(
+        self, driver: webdriver.Chrome, timeout: int = DEFAULT_TIMEOUT
+    ):
         return WebDriverWait(driver, timeout).until(
             EC.element_to_be_clickable((self.by, self.selector))
         )
+
 
 def wait_for_no_overlay(driver, timeout=DEFAULT_TIMEOUT):
     """Espera a que desaparezca cualquier overlay de diálogo/modal que bloquee la interacción."""
     try:
         WebDriverWait(driver, timeout).until_not(
             lambda d: any(
-                el.is_displayed() for el in d.find_elements(By.CSS_SELECTOR, '[data-slot="dialog-overlay"]')
+                el.is_displayed()
+                for el in d.find_elements(
+                    By.CSS_SELECTOR, '[data-slot="dialog-overlay"]'
+                )
             )
         )
     except Exception:
         pass  # Si no hay overlay, continúa
+
 
 def click_delete_first_employee(driver):
     WebDriverWait(driver, 10).until(
         lambda d: d.find_element(By.XPATH, "//table//tr[td]")
     )
     btn = WebDriverWait(driver, 10).until(
-        lambda d: d.find_element(By.XPATH, "//table//tr[td]//button[@data-testid='delete-employee-btn']")
+        lambda d: d.find_element(
+            By.XPATH, "//table//tr[td]//button[@data-testid='delete-employee-btn']"
+        )
     )
     driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
     wait_for_no_overlay(driver)
     btn.click()
 
+
 def esperar_elemento_interactivo(driver, by, selector, timeout=DEFAULT_TIMEOUT):
     """Espera a que un elemento sea visible y habilitado, y hace scroll hasta él. Lanza excepción si no lo encuentra."""
+
     def _find():
         el = driver.find_element(by, selector)
         if el.is_displayed() and el.is_enabled():
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", el)
             return el
         return None
+
     return WebDriverWait(driver, timeout).until(lambda d: _find())
+
 
 def filtrar_por_columna(driver, columna, valor):
     """
@@ -93,13 +110,20 @@ def filtrar_por_columna(driver, columna, valor):
     valor: texto a buscar
     """
     try:
-        filtro = esperar_elemento_interactivo(driver, By.XPATH, f"//th[contains(., '{columna}')]//input[@placeholder='Buscar...']")
+        filtro = esperar_elemento_interactivo(
+            driver,
+            By.XPATH,
+            f"//th[contains(., '{columna}')]//input[@placeholder='Buscar...']",
+        )
     except Exception:
-        filtro = esperar_elemento_interactivo(driver, By.XPATH, "//input[@placeholder='Buscar...']")
+        filtro = esperar_elemento_interactivo(
+            driver, By.XPATH, "//input[@placeholder='Buscar...']"
+        )
     assert filtro is not None, "No se encontró el input de filtro"
     filtro.clear()
     filtro.send_keys(valor)
     wait_for_no_overlay(driver)
+
 
 def click_edit_first_employee(driver, retries=3):
     for attempt in range(retries):
@@ -107,10 +131,12 @@ def click_edit_first_employee(driver, retries=3):
             btn = WebDriverWait(driver, 10).until(
                 lambda d: d.find_element(
                     By.XPATH,
-                    "//table//tr[td][1]//button[@data-testid='edit-employee-btn' and contains(., 'Editar')]"
+                    "//table//tr[td][1]//button[@data-testid='edit-employee-btn' and contains(., 'Editar')]",
                 )
             )
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", btn
+            )
             wait_for_no_overlay(driver)
             btn.click()
             return
@@ -120,13 +146,12 @@ def click_edit_first_employee(driver, retries=3):
             else:
                 continue
 
+
 def click_action_button_by_employee_name(driver, nombre, accion="editar"):
     """
     Busca la fila que contiene el nombre y hace click en el botón de acción ('editar' o 'eliminar').
     """
-    WebDriverWait(driver, 10).until(
-        lambda d: d.find_element(By.XPATH, "//table")
-    )
+    WebDriverWait(driver, 10).until(lambda d: d.find_element(By.XPATH, "//table"))
     filas = driver.find_elements(By.XPATH, f"//table//tr[td[contains(., '{nombre}')]]")
     assert filas, f"No se encontró ninguna fila con el nombre '{nombre}'"
     fila = filas[0]
@@ -135,7 +160,9 @@ def click_action_button_by_employee_name(driver, nombre, accion="editar"):
         if not btns:
             btns = fila.find_elements(By.XPATH, ".//button[contains(., 'Editar')]")
     else:
-        btns = fila.find_elements(By.CSS_SELECTOR, "[data-testid='delete-employee-btn']")
+        btns = fila.find_elements(
+            By.CSS_SELECTOR, "[data-testid='delete-employee-btn']"
+        )
         if not btns:
             btns = fila.find_elements(By.XPATH, ".//button[contains(., 'Eliminar')]")
     assert btns, f"No se encontró el botón de {accion} en la fila de '{nombre}'"
@@ -143,6 +170,7 @@ def click_action_button_by_employee_name(driver, nombre, accion="editar"):
     driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
     wait_for_no_overlay(driver)
     btn.click()
+
 
 def click_action_first_employee(driver, accion="editar", retries=3):
     testid = "edit-employee-btn" if accion == "editar" else "delete-employee-btn"
@@ -152,10 +180,12 @@ def click_action_first_employee(driver, accion="editar", retries=3):
             btn = WebDriverWait(driver, 10).until(
                 lambda d: d.find_element(
                     By.XPATH,
-                    f"//table//tr[td][1]//button[@data-testid='{testid}' and contains(., '{texto}')]"
+                    f"//table//tr[td][1]//button[@data-testid='{testid}' and contains(., '{texto}')]",
                 )
             )
-            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", btn)
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", btn
+            )
             wait_for_no_overlay(driver)
             btn.click()
             return
@@ -165,8 +195,10 @@ def click_action_first_employee(driver, accion="editar", retries=3):
             else:
                 continue
 
+
 class TestEmployeesUI:
     """Suite de pruebas de UI para Empleados"""
+
     driver: webdriver.Chrome
 
     @classmethod
@@ -177,9 +209,15 @@ class TestEmployeesUI:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-web-security")
         chrome_options.add_argument("--allow-running-insecure-content")
-        chrome_options.add_argument("--headless")  # Activar headless para pruebas automáticas
-        chrome_options.add_argument("--window-size=1920,1080")  # Tamaño de ventana para evitar problemas de visibilidad
-        chrome_options.add_argument("--log-level=3")  # Suprimir logs molestos de ChromeDriver
+        chrome_options.add_argument(
+            "--headless"
+        )  # Activar headless para pruebas automáticas
+        chrome_options.add_argument(
+            "--window-size=1920,1080"
+        )  # Tamaño de ventana para evitar problemas de visibilidad
+        chrome_options.add_argument(
+            "--log-level=3"
+        )  # Suprimir logs molestos de ChromeDriver
 
         cls.driver = webdriver.Chrome(options=chrome_options)
         cls.driver.delete_all_cookies()
@@ -217,7 +255,7 @@ class TestEmployeesUI:
     @add_test_info(
         description="Verificar que el botón de agregar empleado está visible y funcional",
         expected_result="El botón de agregar empleado debe estar visible y abrir el formulario",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-0000",
     )
     @pytest.mark.order(50)
@@ -227,33 +265,54 @@ class TestEmployeesUI:
             form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
             if form_dialog.is_displayed():
                 WebDriverWait(self.driver, 10).until_not(
-                    lambda d: d.find_element(By.ID, "employee-form-dialog").is_displayed()
+                    lambda d: d.find_element(
+                        By.ID, "employee-form-dialog"
+                    ).is_displayed()
                 )
         except Exception:
             pass  # No hay formulario abierto
         wait_for_no_overlay(self.driver)
         try:
-            add_button = esperar_elemento_interactivo(self.driver, EmployeesLocators.ADD_EMPLOYEE_BTN.by, EmployeesLocators.ADD_EMPLOYEE_BTN.selector, timeout=20)
+            add_button = esperar_elemento_interactivo(
+                self.driver,
+                EmployeesLocators.ADD_EMPLOYEE_BTN.by,
+                EmployeesLocators.ADD_EMPLOYEE_BTN.selector,
+                timeout=20,
+            )
         except Exception:
-            add_button = esperar_elemento_interactivo(self.driver, By.XPATH, "//button[contains(., 'Agregar Empleado')]", timeout=20)
+            add_button = esperar_elemento_interactivo(
+                self.driver,
+                By.XPATH,
+                "//button[contains(., 'Agregar Empleado')]",
+                timeout=20,
+            )
         assert add_button is not None, "No se encontró el botón de agregar empleado"
         assert add_button.is_displayed(), "El botón de agregar empleado no se muestra"
         try:
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", add_button)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", add_button
+            )
             wait_for_no_overlay(self.driver)
             add_button.click()
         except Exception as e:
-            overlays = self.driver.find_elements(By.CSS_SELECTOR, '[data-slot="dialog-overlay"]')
+            overlays = self.driver.find_elements(
+                By.CSS_SELECTOR, '[data-slot="dialog-overlay"]'
+            )
             for idx, ov in enumerate(overlays):
                 pass
-            self.driver.find_element(By.TAG_NAME, "body").get_attribute('outerHTML')
+            self.driver.find_element(By.TAG_NAME, "body").get_attribute("outerHTML")
             raise
         wait_for_no_overlay(self.driver)
         try:
             form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
         except Exception:
-            form_dialog = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]")
-        assert form_dialog.is_displayed(), "El formulario de empleado no se muestra al hacer clic en agregar"
+            form_dialog = self.driver.find_element(
+                By.XPATH,
+                "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]",
+            )
+        assert (
+            form_dialog.is_displayed()
+        ), "El formulario de empleado no se muestra al hacer clic en agregar"
         try:
             close_btn = self.driver.find_element(By.ID, "employee-form-cancel-btn")
             close_btn.click()
@@ -264,43 +323,72 @@ class TestEmployeesUI:
     @add_test_info(
         description="Crear un empleado predefinido para pruebas",
         expected_result="El empleado debe ser creado y visible en la tabla",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-001",
     )
     @pytest.mark.order(51)
     def test_create_predefined_employee(self):
         wait_for_no_overlay(self.driver)
         try:
-            add_button = esperar_elemento_interactivo(self.driver, EmployeesLocators.ADD_EMPLOYEE_BTN.by, EmployeesLocators.ADD_EMPLOYEE_BTN.selector, timeout=20)
+            add_button = esperar_elemento_interactivo(
+                self.driver,
+                EmployeesLocators.ADD_EMPLOYEE_BTN.by,
+                EmployeesLocators.ADD_EMPLOYEE_BTN.selector,
+                timeout=20,
+            )
         except Exception:
-            add_button = esperar_elemento_interactivo(self.driver, By.XPATH, "//button[contains(., 'Agregar Empleado')]", timeout=20)
+            add_button = esperar_elemento_interactivo(
+                self.driver,
+                By.XPATH,
+                "//button[contains(., 'Agregar Empleado')]",
+                timeout=20,
+            )
         assert add_button is not None, "No se encontró el botón de agregar empleado"
         add_button.click()
         wait_for_no_overlay(self.driver)
         try:
             form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
         except Exception:
-            form_dialog = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]")
-        assert form_dialog.is_displayed(), "El formulario de empleado no se muestra al hacer clic en agregar"
-        self.driver.find_element(By.ID, "employee-document-number").send_keys("9999999999")
-        self.driver.find_element(By.ID, "employee-full-name").send_keys("Empleado Prueba UI")
+            form_dialog = self.driver.find_element(
+                By.XPATH,
+                "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]",
+            )
+        assert (
+            form_dialog.is_displayed()
+        ), "El formulario de empleado no se muestra al hacer clic en agregar"
+        self.driver.find_element(By.ID, "employee-document-number").send_keys(
+            "9999999999"
+        )
+        self.driver.find_element(By.ID, "employee-full-name").send_keys(
+            "Empleado Prueba UI"
+        )
         self.driver.find_element(By.ID, "employee-birth-date").send_keys("1990-01-01")
-        self.driver.find_element(By.ID, "employee-personal-email").send_keys("prueba.ui@example.com")
+        self.driver.find_element(By.ID, "employee-personal-email").send_keys(
+            "prueba.ui@example.com"
+        )
         self.driver.find_element(By.ID, "employee-hire-date").send_keys("2023-01-01")
         try:
             gender_select = self.driver.find_element(By.ID, "employee-gender-select")
             gender_select.click()
-            self.driver.find_element(By.CSS_SELECTOR, "#employee-gender-options [role='option']").click()
+            self.driver.find_element(
+                By.CSS_SELECTOR, "#employee-gender-options [role='option']"
+            ).click()
         except Exception:
             pass
         try:
-            role_select = self.driver.find_element(By.ID, "employee-operational-role-select")
+            role_select = self.driver.find_element(
+                By.ID, "employee-operational-role-select"
+            )
             role_select.click()
-            self.driver.find_element(By.CSS_SELECTOR, "#employee-operational-role-options [role='option']").click()
+            self.driver.find_element(
+                By.CSS_SELECTOR, "#employee-operational-role-options [role='option']"
+            ).click()
         except Exception:
             pass
         guardar_btn = self.driver.find_element(By.ID, "employee-form-submit-btn")
-        self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", guardar_btn)
+        self.driver.execute_script(
+            "arguments[0].scrollIntoView({block: 'center'});", guardar_btn
+        )
         wait_for_no_overlay(self.driver)
         guardar_btn.click()
         try:
@@ -310,7 +398,10 @@ class TestEmployeesUI:
         except Exception:
             try:
                 WebDriverWait(self.driver, 20).until_not(
-                    lambda d: d.find_element(By.XPATH, "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]").is_displayed()
+                    lambda d: d.find_element(
+                        By.XPATH,
+                        "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]",
+                    ).is_displayed()
                 )
             except Exception:
                 pass
@@ -319,7 +410,7 @@ class TestEmployeesUI:
     @add_test_info(
         description="Verificar que la página de empleados carga correctamente",
         expected_result="La página de empleados debe cargar sin errores",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-002",
     )
     @pytest.mark.order(52)
@@ -327,16 +418,21 @@ class TestEmployeesUI:
         wait_for_no_overlay(self.driver)
         # Usar selector robusto para el título
         try:
-            title = self.driver.find_element(By.CSS_SELECTOR, "h1.text-3xl.font-bold.mb-2")
+            title = self.driver.find_element(
+                By.CSS_SELECTOR, "h1.text-3xl.font-bold.mb-2"
+            )
         except Exception:
-            title = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Empleados')]")
-        assert "Empleados" in title.text, f"El título de la página de empleados no es correcto: '{title.text}'"
-    
+            title = self.driver.find_element(
+                By.XPATH, "//*[contains(text(), 'Empleados')]"
+            )
+        assert (
+            "Empleados" in title.text
+        ), f"El título de la página de empleados no es correcto: '{title.text}'"
 
     @add_test_info(
         description="Verificar que el formulario de empleado tiene los campos clave presentes",
         expected_result="El formulario debe mostrar los campos requeridos para crear un empleado",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-003",
     )
     @pytest.mark.order(53)
@@ -346,7 +442,9 @@ class TestEmployeesUI:
         try:
             form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
             if not form_dialog.is_displayed():
-                EmployeesLocators.ADD_EMPLOYEE_BTN.wait_until_clickable(self.driver).click()
+                EmployeesLocators.ADD_EMPLOYEE_BTN.wait_until_clickable(
+                    self.driver
+                ).click()
         except Exception:
             EmployeesLocators.ADD_EMPLOYEE_BTN.wait_until_clickable(self.driver).click()
             form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
@@ -358,7 +456,9 @@ class TestEmployeesUI:
         save_btn = self.driver.find_element(By.ID, "employee-form-submit-btn")
         cancel_btn = self.driver.find_element(By.ID, "employee-form-cancel-btn")
         assert full_name.is_displayed(), "El campo de nombre completo no se muestra"
-        assert document_number.is_displayed(), "El campo de número de documento no se muestra"
+        assert (
+            document_number.is_displayed()
+        ), "El campo de número de documento no se muestra"
         assert email.is_displayed(), "El campo de email personal no se muestra"
         assert save_btn.is_displayed(), "El botón de guardar no se muestra"
         assert cancel_btn.is_displayed(), "El botón de cancelar no se muestra"
@@ -366,41 +466,67 @@ class TestEmployeesUI:
     @add_test_info(
         description="Verificar que la tabla de empleados está visible",
         expected_result="La tabla de empleados debe estar visible en la página",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-004",
     )
     @pytest.mark.order(54)
     def test_employees_table_visible(self):
         wait_for_no_overlay(self.driver)
         try:
-            table = self.driver.find_element(By.CSS_SELECTOR, "#employees-table, [data-testid='employees-table']")
+            table = self.driver.find_element(
+                By.CSS_SELECTOR, "#employees-table, [data-testid='employees-table']"
+            )
         except Exception:
-            table = self.driver.find_element(By.XPATH, "//table[.//th[contains(., 'Nombre Completo')]]")
+            table = self.driver.find_element(
+                By.XPATH, "//table[.//th[contains(., 'Nombre Completo')]]"
+            )
         assert table.is_displayed(), "La tabla de empleados no se muestra"
 
     @add_test_info(
         description="Verificar funcionamiento de la paginación de empleados",
         expected_result="Los botones de paginación deben estar presentes y funcionar",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-005",
     )
     @pytest.mark.order(55)
     def test_employees_pagination(self):
         try:
             wait_for_no_overlay(self.driver)
-            next_btn = esperar_elemento_interactivo(self.driver, By.CSS_SELECTOR, "[data-testid='pagination-next-btn']", timeout=20)
-            prev_btn = esperar_elemento_interactivo(self.driver, By.CSS_SELECTOR, "[data-testid='pagination-prev-btn']", timeout=20)
-            assert next_btn is not None, "No se encontró el botón de paginación siguiente"
-            assert prev_btn is not None, "No se encontró el botón de paginación anterior"
+            next_btn = esperar_elemento_interactivo(
+                self.driver,
+                By.CSS_SELECTOR,
+                "[data-testid='pagination-next-btn']",
+                timeout=20,
+            )
+            prev_btn = esperar_elemento_interactivo(
+                self.driver,
+                By.CSS_SELECTOR,
+                "[data-testid='pagination-prev-btn']",
+                timeout=20,
+            )
+            assert (
+                next_btn is not None
+            ), "No se encontró el botón de paginación siguiente"
+            assert (
+                prev_btn is not None
+            ), "No se encontró el botón de paginación anterior"
 
             # Scroll hasta los botones antes de interactuar
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_btn)
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", prev_btn)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", next_btn
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", prev_btn
+            )
 
-            page_info = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Página')]")
+            page_info = self.driver.find_element(
+                By.XPATH, "//*[contains(text(), 'Página')]"
+            )
             match = re.search(r"Página (\d+) de (\d+)", page_info.text)
             if not match:
-                raise Exception(f"No se pudo encontrar el número de página en el texto: '{page_info.text}'")
+                raise Exception(
+                    f"No se pudo encontrar el número de página en el texto: '{page_info.text}'"
+                )
             pagina_actual = int(match.group(1))
             total_paginas = int(match.group(2))
 
@@ -413,13 +539,21 @@ class TestEmployeesUI:
                 wait_for_no_overlay(self.driver)
                 next_btn.click()
                 wait_for_no_overlay(self.driver)
+
                 def obtener_pagina_actual(driver):
-                    texto = driver.find_element(By.XPATH, "//*[contains(text(), 'Página')]").text
+                    texto = driver.find_element(
+                        By.XPATH, "//*[contains(text(), 'Página')]"
+                    ).text
                     match = re.search(r"Página (\d+)", texto)
                     if match:
                         return int(match.group(1))
                     else:
-                        raise Exception("No se pudo encontrar el número de página en el texto: '{}'".format(texto))
+                        raise Exception(
+                            "No se pudo encontrar el número de página en el texto: '{}'".format(
+                                texto
+                            )
+                        )
+
                 WebDriverWait(self.driver, 20).until(
                     lambda d: obtener_pagina_actual(d) == pagina_actual + 1
                 )
@@ -431,13 +565,21 @@ class TestEmployeesUI:
                 wait_for_no_overlay(self.driver)
                 prev_btn.click()
                 wait_for_no_overlay(self.driver)
+
                 def obtener_pagina_actual(driver):
-                    texto = driver.find_element(By.XPATH, "//*[contains(text(), 'Página')]").text
+                    texto = driver.find_element(
+                        By.XPATH, "//*[contains(text(), 'Página')]"
+                    ).text
                     match = re.search(r"Página (\d+)", texto)
                     if match:
                         return int(match.group(1))
                     else:
-                        raise Exception("No se pudo encontrar el número de página en el texto: '{}'".format(texto))
+                        raise Exception(
+                            "No se pudo encontrar el número de página en el texto: '{}'".format(
+                                texto
+                            )
+                        )
+
                 WebDriverWait(self.driver, 20).until(
                     lambda d: obtener_pagina_actual(d) == pagina_actual
                 )
@@ -449,7 +591,7 @@ class TestEmployeesUI:
     @add_test_info(
         description="Verificar que el formulario de edición de empleado se abre al hacer clic en el botón de editar",
         expected_result="El formulario de edición debe abrirse al hacer clic en editar",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-006",
     )
     @pytest.mark.order(56)
@@ -461,15 +603,20 @@ class TestEmployeesUI:
             try:
                 form_dialog = self.driver.find_element(By.ID, "employee-form-dialog")
             except Exception:
-                form_dialog = self.driver.find_element(By.XPATH, "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]")
-            assert form_dialog.is_displayed(), "El formulario de edición de empleado no se muestra"
+                form_dialog = self.driver.find_element(
+                    By.XPATH,
+                    "//*[contains(text(), 'Agregar Empleado') or contains(text(), 'Editar Empleado')]/ancestor::div[contains(@class, 'DialogContent') or contains(@class, 'dialog')]",
+                )
+            assert (
+                form_dialog.is_displayed()
+            ), "El formulario de edición de empleado no se muestra"
         except StaleElementReferenceException:
             return
 
     @add_test_info(
         description="Edita el nombre del empleado y verifica el cambio en la tabla",
         expected_result="El formulario de edición debe abrirse al hacer clic en editar",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-006",
     )
     @pytest.mark.order(57)
@@ -478,18 +625,26 @@ class TestEmployeesUI:
             wait_for_no_overlay(self.driver)
             click_action_first_employee(self.driver, accion="editar")
             wait_for_no_overlay(self.driver)
-            input_nombre = esperar_elemento_interactivo(self.driver, By.ID, "employee-full-name", timeout=20)
-            assert input_nombre is not None, "No se encontró el input de nombre para editar"
+            input_nombre = esperar_elemento_interactivo(
+                self.driver, By.ID, "employee-full-name", timeout=20
+            )
+            assert (
+                input_nombre is not None
+            ), "No se encontró el input de nombre para editar"
             nombre_editado = "Empleado Prueba UI Editado"
             input_nombre.clear()
             input_nombre.send_keys(nombre_editado)
             guardar_btn = self.driver.find_element(By.ID, "employee-form-submit-btn")
-            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", guardar_btn)
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", guardar_btn
+            )
             wait_for_no_overlay(self.driver)
             guardar_btn.click()
             try:
                 WebDriverWait(self.driver, 20).until_not(
-                    lambda d: d.find_element(By.ID, "employee-form-dialog").is_displayed()
+                    lambda d: d.find_element(
+                        By.ID, "employee-form-dialog"
+                    ).is_displayed()
                 )
             except Exception:
                 pass
@@ -498,18 +653,18 @@ class TestEmployeesUI:
                 lambda d: nombre_editado in d.find_element(By.XPATH, "//table").text
             )
             table = self.driver.find_element(By.XPATH, "//table")
-            assert nombre_editado in table.text, "El nombre editado no aparece en la tabla"
+            assert (
+                nombre_editado in table.text
+            ), "El nombre editado no aparece en la tabla"
         except Exception:
             return
-
 
     @add_test_info(
         description="Verificar que el botón de eliminar empleado está presente en la tabla",
         expected_result="El botón de eliminar debe estar visible para cada empleado",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-007",
     )
-
     @pytest.mark.order(58)
     def test_delete_employee(self):
         try:
@@ -517,26 +672,40 @@ class TestEmployeesUI:
             click_action_first_employee(self.driver, accion="eliminar")
             # Confirmar en el modal si existe
             try:
-                confirm_btn = esperar_elemento_interactivo(self.driver, By.XPATH, "//button[contains(., 'Confirmar') or contains(., 'Eliminar') or contains(., 'Sí') or contains(., 'Aceptar')]", timeout=10)
-                assert confirm_btn is not None, "No se encontró el botón de confirmación de eliminación"
+                confirm_btn = esperar_elemento_interactivo(
+                    self.driver,
+                    By.XPATH,
+                    "//button[contains(., 'Confirmar') or contains(., 'Eliminar') or contains(., 'Sí') or contains(., 'Aceptar')]",
+                    timeout=10,
+                )
+                assert (
+                    confirm_btn is not None
+                ), "No se encontró el botón de confirmación de eliminación"
                 confirm_btn.click()
             except Exception:
                 pass
             wait_for_no_overlay(self.driver)
+
             # Verificar que ya no aparece (sin filtrar, solo buscar por nombre)
             def empleado_ya_no_esta(driver):
                 texto_tabla = driver.find_element(By.XPATH, "//table").text
-                return "No hay resultados" in texto_tabla or "Empleado Prueba UI Editado" not in texto_tabla
+                return (
+                    "No hay resultados" in texto_tabla
+                    or "Empleado Prueba UI Editado" not in texto_tabla
+                )
+
             WebDriverWait(self.driver, 10).until(empleado_ya_no_esta)
             table = self.driver.find_element(By.XPATH, "//table")
-            assert "Empleado Prueba UI Editado" not in table.text, "El empleado no fue eliminado de la tabla"
+            assert (
+                "Empleado Prueba UI Editado" not in table.text
+            ), "El empleado no fue eliminado de la tabla"
         except Exception:
             return
 
     @add_test_info(
         description="Verificar mensaje de carga de empleados",
         expected_result="El mensaje de carga debe mostrarse mientras se cargan los empleados",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-008",
     )
     @pytest.mark.order(59)
@@ -545,15 +714,19 @@ class TestEmployeesUI:
         # Simular recarga de la página
         self.driver.refresh()
         try:
-            loading = self.driver.find_element(By.CSS_SELECTOR, "[data-testid='employees-loading']")
-            assert loading.is_displayed(), "El mensaje de carga de empleados no se muestra"
+            loading = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='employees-loading']"
+            )
+            assert (
+                loading.is_displayed()
+            ), "El mensaje de carga de empleados no se muestra"
         except Exception:
             pass  # Si carga muy rápido, puede que no se vea
 
     @add_test_info(
         description="Verificar mensaje de error de empleados",
         expected_result="El mensaje de error debe mostrarse si ocurre un error al cargar empleados",
-        module="Recursos Humanos - UI",
+        module="UI",
         test_id="EMPLOYEES-UI-009",
     )
     @pytest.mark.order(60)
@@ -562,8 +735,11 @@ class TestEmployeesUI:
         # Este test requiere simular un error en la API o desconexión
         # Aquí solo se verifica que el elemento existe si se da el caso
         try:
-            error = self.driver.find_element(By.CSS_SELECTOR, "[data-testid='employees-error']")
-            assert error.is_displayed(), "El mensaje de error de empleados no se muestra"
+            error = self.driver.find_element(
+                By.CSS_SELECTOR, "[data-testid='employees-error']"
+            )
+            assert (
+                error.is_displayed()
+            ), "El mensaje de error de empleados no se muestra"
         except Exception:
             pass  # Si no hay error, no debe mostrarse
-
