@@ -222,7 +222,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar que la página de ingredientes carga correctamente",
         expected_result="La página de ingredientes debe cargar sin errores",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-001",
     )
     @pytest.mark.order(1)
@@ -245,7 +245,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar la creacion del botón de agregar ingrediente",
         expected_result="El botón de agregar ingrediente debe estar visible",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-002",
     )
     @pytest.mark.order(2)
@@ -319,7 +319,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar que el ingrediente es visible en la tabla después de agregarlo",
         expected_result="El ingrediente debe aparecer en la tabla de ingredientes",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-003",
     )
     @pytest.mark.order(3)
@@ -344,7 +344,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar funcionalidad de validación del formulario",
         expected_result="El formulario debe mostrar errores cuando los campos requeridos están vacíos",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-004",
     )
     @pytest.mark.order(4)
@@ -380,7 +380,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar que los botones de activar/desactivar funcionan correctamente",
         expected_result="Los botones de activar/desactivar deben cambiar el estado del ingrediente",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-005",
     )
     @pytest.mark.order(5)
@@ -428,7 +428,7 @@ class TestIngredientsUI:
     @add_test_info(
         description="Verificar que el botón de eliminar ingrediente funciona correctamente",
         expected_result="El ingrediente debe eliminarse de la lista después de confirmar",
-        module="Menús - UI",
+        module="UI",
         test_id="INGREDIENTS-UI-006",
     )
     @pytest.mark.order(6)

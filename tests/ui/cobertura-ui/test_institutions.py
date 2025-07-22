@@ -33,6 +33,7 @@ class InstitutionsLocation(Enum):
     INTITUTIONSPAGE = (By.CSS_SELECTOR, "#institutions-page")
     INTITUTIONS_TITLE = (By.CSS_SELECTOR, "#institutions-title")
     ADD_INTITUTIONS_BTN = (By.CSS_SELECTOR, "#add-institutions-btn")
+
     @property
     def by(self):
         return self.value[0]
@@ -48,7 +49,6 @@ class InstitutionsLocation(Enum):
         return WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((self.by, self.selector))
         )
-
 
 
 class TestDepartmentsUI:
@@ -100,20 +100,23 @@ class TestDepartmentsUI:
         # Confirmar que se haya redireccionado correctamente
         InstitutionsLocation.SIDEBAR_TOGGLE.wait_until_present(cls.driver)
 
-
     @classmethod
     def _go_to_institutions_page(cls):
         """Navega a la sección de Instituciones dentro de Cobertura"""
-        btn_cobertura = cls.driver.find_element(By.XPATH, "//button[.//span[text()='Cobertura']]")
+        btn_cobertura = cls.driver.find_element(
+            By.XPATH, "//button[.//span[text()='Cobertura']]"
+        )
         btn_cobertura.click()
 
-        departamentos_link = cls.driver.find_element(By.XPATH, "//a[.//span[text()='Instituciones Educativas']]")
+        departamentos_link = cls.driver.find_element(
+            By.XPATH, "//a[.//span[text()='Instituciones Educativas']]"
+        )
         departamentos_link.click()
 
     @add_test_info(
         description="Verificar que la página de Instituciones carga correctamente",
         expected_result="La página de Instituciones debe cargar sin errores",
-        module="Cobertura - UI",
+        module="UI",
         test_id="INSTITUTIONS-UI-001",
     )
     @pytest.mark.order(83)
@@ -123,37 +126,53 @@ class TestDepartmentsUI:
         title = self.driver.find_element(By.XPATH, "//h2[text()='Instituciones']")
         assert "Instituciones" in title.text, "El título de la página no es correcto"
         # Verficar botón de añadir Institución
-        add_department_btn = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Agregar Institución')]")
-        assert add_department_btn.is_displayed(), "El botón de añadir Institución no se muestra en la página"
+        add_department_btn = self.driver.find_element(
+            By.XPATH, "//button[contains(text(), 'Agregar Institución')]"
+        )
+        assert (
+            add_department_btn.is_displayed()
+        ), "El botón de añadir Institución no se muestra en la página"
 
     @add_test_info(
         description="Verificar que el botón de añadir Institucion funciona correctamente",
         expected_result="El botón de añadir Institucion debe abrir el modal de creación",
-        module="Cobertura - UI",
+        module="UI",
         test_id="INSTITUTIONS-UI-002",
     )
     @pytest.mark.order(84)
     def test_add_institution_button(self):
         """Verificar que el botón de agregar Institucion está visible y funciona correctamente"""
-        self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/institutions")  # Ajusta la URL si es diferente
+        self.driver.get(
+            f"{settings.BASE_FRONTEND_URL}/coverage/institutions"
+        )  # Ajusta la URL si es diferente
         # Verificar que el botón de agregar está presente
         add_button = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//button[normalize-space()='Agregar Institución']"))
+            EC.presence_of_element_located(
+                (By.XPATH, "//button[normalize-space()='Agregar Institución']")
+            )
         )
-        assert add_button.is_displayed(), "El botón de agregar Institución no se muestra"
+        assert (
+            add_button.is_displayed()
+        ), "El botón de agregar Institución no se muestra"
         add_button.click()
         # Verificar que se abre el modal
         dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "radix-«rb»"))  # Ajusta el ID si es dinámico o diferente
+            EC.presence_of_element_located(
+                (By.ID, "radix-«rb»")
+            )  # Ajusta el ID si es dinámico o diferente
         )
-        assert dialog.is_displayed(), "El diálogo de creación de institución no se muestra"
+        assert (
+            dialog.is_displayed()
+        ), "El diálogo de creación de institución no se muestra"
 
         # Llenar campos del formulario
         name_input = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "name"))
         )
         dane_code_input = self.driver.find_element(By.ID, "dane_code")
-        save_button = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
+        save_button = self.driver.find_element(
+            By.XPATH, "//button[normalize-space()='Guardar']"
+        )
 
         # Clic en el combobox del municipio
         combobox_button = WebDriverWait(self.driver, 5).until(
@@ -163,7 +182,9 @@ class TestDepartmentsUI:
 
         # Seleccionar el municipio "Cali"
         opcion_municipio = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Cali']"))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@role='option' and normalize-space()='Cali']")
+            )
         )
         opcion_municipio.click()
 
@@ -172,17 +193,22 @@ class TestDepartmentsUI:
         dane_code_input.send_keys("1234567890")
 
         # Verificar los datos ingresados (opcional)
-        assert name_input.get_attribute("value") == "test IE", "El nombre no se ingresó correctamente"
-        assert dane_code_input.get_attribute("value") == "1234567890", "El código DANE no se ingresó correctamente"
+        assert (
+            name_input.get_attribute("value") == "test IE"
+        ), "El nombre no se ingresó correctamente"
+        assert (
+            dane_code_input.get_attribute("value") == "1234567890"
+        ), "El código DANE no se ingresó correctamente"
 
         # Clic en guardar
         save_button.click()
+
     @add_test_info(
         description="Verificar que el botón de editar Instituciones funciona correctamente",
         expected_result="El botón de editar Instituciones debe abrir el modal de edición",
-        module="Cobertura - UI",
+        module="UI",
         test_id="INSTITUTIONS-UI-003",
-        )
+    )
     @pytest.mark.order(85)
     def test_edit_institution_button(self):
         """Verificar que se puede editar un departamento correctamente"""
@@ -191,17 +217,25 @@ class TestDepartmentsUI:
         # Buscar y hacer clic en el botón de editar del departamento de prueba
         editar_btn = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test IE']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]"
+            "//h3[normalize-space()='test IE']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]",
         )
-        assert editar_btn.is_displayed(), "El botón de editar no se muestra para 'test IE'"
+        assert (
+            editar_btn.is_displayed()
+        ), "El botón de editar no se muestra para 'test IE'"
         editar_btn.click()
         # Verificar que se abre el modal de edición
         dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "radix-«rb»"))  # Ajustar si el ID es dinámico
+            EC.presence_of_element_located(
+                (By.ID, "radix-«rb»")
+            )  # Ajustar si el ID es dinámico
         )
-        assert dialog.is_displayed(), "El diálogo de edición de departamento no se muestra"
+        assert (
+            dialog.is_displayed()
+        ), "El diálogo de edición de departamento no se muestra"
         # Editar nombre
-        name_input = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "name")))
+        name_input = WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.ID, "name"))
+        )
         name_input.clear()
         name_input.send_keys("test IE editado")
 
@@ -212,41 +246,54 @@ class TestDepartmentsUI:
         combo_button.click()
 
         opcion_municipio = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Bogotá']"))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@role='option' and normalize-space()='Bogotá']")
+            )
         )
         opcion_municipio.click()
 
         # Guardar cambios
-        guardar_btn = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
+        guardar_btn = self.driver.find_element(
+            By.XPATH, "//button[normalize-space()='Guardar']"
+        )
         guardar_btn.click()
+
     @add_test_info(
         description="Verificar que el botón de eliminar departamento funciona correctamente",
         expected_result="El botón de eliminar departamento debe abrir el modal de confirmación",
-        module="Cobertura - UI",
+        module="UI",
         test_id="INSTITUTIONS-UI-004",
     )
     @pytest.mark.order(86)
     def test_delete_departamento_button(self):
         """Verificar que se puede eliminar un departamento correctamente"""
-        self.driver.get(f"{settings.BASE_FRONTEND_URL}/coverage/institutions")  # Ajusta si es necesario
+        self.driver.get(
+            f"{settings.BASE_FRONTEND_URL}/coverage/institutions"
+        )  # Ajusta si es necesario
         # Buscar y hacer clic en el botón de eliminar del departamento editado
         delete_button = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test IE editado']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[3]"
+            "//h3[normalize-space()='test IE editado']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[3]",
         )
-        assert delete_button.is_displayed(), "El botón de eliminar no se muestra para 'test IE editado'"
+        assert (
+            delete_button.is_displayed()
+        ), "El botón de eliminar no se muestra para 'test IE editado'"
         delete_button.click()
         # Verificar que se abre el modal de confirmación
         delete_dialog = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "radix-«re»"))  # Ajustar si cambia
         )
-        assert delete_dialog.is_displayed(), "El diálogo de eliminar departamento no se muestra"
+        assert (
+            delete_dialog.is_displayed()
+        ), "El diálogo de eliminar departamento no se muestra"
 
         # Hacer clic en el botón "Eliminar"
         confirm_button = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.ID, "confirm-button"))
         )
-        assert confirm_button.is_displayed(), "El botón de confirmar eliminación no se muestra"
+        assert (
+            confirm_button.is_displayed()
+        ), "El botón de confirmar eliminación no se muestra"
         confirm_button.click()
 
         # Verificar que el diálogo se cierra

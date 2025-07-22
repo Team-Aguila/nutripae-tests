@@ -15,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 DEFAULT_TIMEOUT = 20  # Tiempo por defecto para esperas
 
+
 class TownsLocation(Enum):
     """Enum de locators para elementos de la página de Municipios."""
 
@@ -32,6 +33,7 @@ class TownsLocation(Enum):
     TOWNSPAGE = (By.CSS_SELECTOR, "#towns-page")
     TOWNS_TITLE = (By.CSS_SELECTOR, "#towns-title")
     ADD_DEPARTMENT_BTN = (By.CSS_SELECTOR, "#add-department-btn")
+
     @property
     def by(self):
         return self.value[0]
@@ -47,6 +49,7 @@ class TownsLocation(Enum):
         return WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((self.by, self.selector))
         )
+
 
 class TestTownsUI:
     def setup_class(cls):
@@ -73,6 +76,7 @@ class TestTownsUI:
         """Cleanup que se ejecuta al final de la clase"""
         if hasattr(cls, "driver"):
             cls.driver.quit()
+
     @classmethod
     def _login(cls):
         cls.driver.get(f"{settings.BASE_FRONTEND_URL}/login")
@@ -90,19 +94,23 @@ class TestTownsUI:
         # Confirmar que se haya redireccionado correctamente
         TownsLocation.SIDEBAR_TOGGLE.wait_until_present(cls.driver)
 
-
     @classmethod
     def _go_to_towns_page(cls):
         """Navega a la sección de Municipios dentro de Cobertura"""
-        btn_cobertura = cls.driver.find_element(By.XPATH, "//button[.//span[text()='Cobertura']]")
+        btn_cobertura = cls.driver.find_element(
+            By.XPATH, "//button[.//span[text()='Cobertura']]"
+        )
         btn_cobertura.click()
 
-        departamentos_link = cls.driver.find_element(By.XPATH, "//a[.//span[text()='Municipios']]")
+        departamentos_link = cls.driver.find_element(
+            By.XPATH, "//a[.//span[text()='Municipios']]"
+        )
         departamentos_link.click()
+
     @add_test_info(
         description="Verificar que la página de municipios carga correctamente",
         expected_result="La página de municipios debe cargar sin errores",
-        module="Cobertura - UI",
+        module="UI",
         test_id="TOWNS-UI-001",
     )
     @pytest.mark.order(79)
@@ -112,13 +120,17 @@ class TestTownsUI:
         title = self.driver.find_element(By.XPATH, "//h2[text()='Municipios']")
         assert "Municipios" in title.text, "El título de la página no es correcto"
         # Verficar botón de añadir Municipios
-        add_department_btn = self.driver.find_element(By.XPATH, "//button[contains(text(), 'Agregar Municipio')]")
-        assert add_department_btn.is_displayed(), "El botón de añadir Municipios no se muestra en la página"
+        add_department_btn = self.driver.find_element(
+            By.XPATH, "//button[contains(text(), 'Agregar Municipio')]"
+        )
+        assert (
+            add_department_btn.is_displayed()
+        ), "El botón de añadir Municipios no se muestra en la página"
 
     @add_test_info(
         description="Verificar que el botón de agregar municipio funciona correctamente",
         expected_result="El municipio debe ser agregado y el toast de éxito debe mostrarse",
-        module="Cobertura - UI",
+        module="UI",
         test_id="TOWNS-UI-002",
     )
     @pytest.mark.order(80)
@@ -128,26 +140,28 @@ class TestTownsUI:
 
         # Verificar que el botón de agregar municipio está presente y hacer clic
         add_button = WebDriverWait(self.driver, 10).until(
-            EC.element_to_be_clickable((
-                By.XPATH,
-                "//button[contains(., 'Agregar Municipio')]"
-            ))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//button[contains(., 'Agregar Municipio')]")
+            )
         )
         assert add_button.is_displayed(), "El botón de agregar municipio no se muestra"
         add_button.click()
-
 
         # Esperar que se abra el modal (ajusta el ID si es dinámico)
         dialog = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "radix-«rb»"))
         )
-        assert dialog.is_displayed(), "El diálogo de creación de municipio no se muestra"
+        assert (
+            dialog.is_displayed()
+        ), "El diálogo de creación de municipio no se muestra"
         # Llenar el campo de nombre
         name_input = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "name"))
         )
         dane_code_input = self.driver.find_element(By.ID, "dane_code")
-        save_button = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
+        save_button = self.driver.find_element(
+            By.XPATH, "//button[normalize-space()='Guardar']"
+        )
 
         # Clic en el combobox del departamento
         combobox_button = WebDriverWait(self.driver, 5).until(
@@ -157,7 +171,9 @@ class TestTownsUI:
 
         # Seleccionar opción "Antioquia"
         opcion_departamento = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Antioquia']"))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@role='option' and normalize-space()='Antioquia']")
+            )
         )
         opcion_departamento.click()
 
@@ -166,15 +182,20 @@ class TestTownsUI:
         dane_code_input.send_keys("456")
 
         # Verificar datos ingresados (opcional)
-        assert name_input.get_attribute("value") == "test municipio", "El nombre no se ingresó correctamente"
-        assert dane_code_input.get_attribute("value") == "456", "El código DANE no se ingresó correctamente"
+        assert (
+            name_input.get_attribute("value") == "test municipio"
+        ), "El nombre no se ingresó correctamente"
+        assert (
+            dane_code_input.get_attribute("value") == "456"
+        ), "El código DANE no se ingresó correctamente"
 
         # Clic en guardar
         save_button.click()
+
     @add_test_info(
         description="Verificar que el municipio editado se muestra en la lista",
         expected_result="El municipio debe aparecer en la lista de municipios",
-        module="Cobertura - UI",
+        module="UI",
         test_id="TOWNS-UI-003",
     )
     @pytest.mark.order(81)
@@ -185,13 +206,17 @@ class TestTownsUI:
         # Verificar que el botón de editar municipio está presente y hacer clic
         editar_btn = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test municipio']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]"
+            "//h3[normalize-space()='test municipio']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[2]",
         )
-        assert editar_btn.is_displayed(), "El botón de editar no se muestra para 'test municipio'"
+        assert (
+            editar_btn.is_displayed()
+        ), "El botón de editar no se muestra para 'test municipio'"
         editar_btn.click()
         # Verificar que se abre el modal de edición
         dialog = WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.ID, "radix-«rb»"))  # Ajustar si el ID es dinámico
+            EC.presence_of_element_located(
+                (By.ID, "radix-«rb»")
+            )  # Ajustar si el ID es dinámico
         )
         assert dialog.is_displayed(), "El diálogo de edición de municipio no se muestra"
         # Editar los datos del municipio
@@ -206,7 +231,9 @@ class TestTownsUI:
         name_input.send_keys(nuevo_nombre)
 
         # Verificar el cambio en el campo
-        assert name_input.get_attribute("value") == nuevo_nombre, "El campo de nombre no se actualizó correctamente"
+        assert (
+            name_input.get_attribute("value") == nuevo_nombre
+        ), "El campo de nombre no se actualizó correctamente"
 
         # Seleccionar nuevo departamento desde el combobox
         combo_button = WebDriverWait(self.driver, 5).until(
@@ -216,19 +243,23 @@ class TestTownsUI:
 
         # Seleccionar "Tolima" como nuevo departamento
         opcion_departamento = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.XPATH, "//div[@role='option' and normalize-space()='Tolima']"))
+            EC.element_to_be_clickable(
+                (By.XPATH, "//div[@role='option' and normalize-space()='Tolima']")
+            )
         )
         opcion_departamento.click()
 
         # Guardar cambios
-        save_button = self.driver.find_element(By.XPATH, "//button[normalize-space()='Guardar']")
+        save_button = self.driver.find_element(
+            By.XPATH, "//button[normalize-space()='Guardar']"
+        )
         assert save_button.is_displayed(), "El botón de guardar no se muestra"
         save_button.click()
 
     @add_test_info(
         description="Verificar que el municipio elminiado no aparece en la lista",
         expected_result="El municipio eliminado no debe aparecer en la lista de municipios",
-        module="Cobertura - UI",
+        module="UI",
         test_id="TOWNS-UI-004",
     )
     @pytest.mark.order(82)
@@ -238,20 +269,26 @@ class TestTownsUI:
         # Buscar y hacer clic en el botón de eliminar del departamento editado
         delete_button = self.driver.find_element(
             By.XPATH,
-            "//h3[normalize-space()='test municipio editado']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[3]"
+            "//h3[normalize-space()='test municipio editado']/ancestor::div[contains(@class, 'p-4') and contains(@class, 'shadow-sm')]//div[contains(@class,'justify-end')]//button[3]",
         )
-        assert delete_button.is_displayed(), "El botón de eliminar no se muestra para 'test municipio editado'"
+        assert (
+            delete_button.is_displayed()
+        ), "El botón de eliminar no se muestra para 'test municipio editado'"
         delete_button.click()
         # Verificar que se abre el modal de confirmación
         delete_dialog = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "radix-«re»"))  # Ajustar si cambia
         )
-        assert delete_dialog.is_displayed(), "El diálogo de confirmación de eliminación no se muestra"
+        assert (
+            delete_dialog.is_displayed()
+        ), "El diálogo de confirmación de eliminación no se muestra"
         # Hacer clic en el botón "Eliminar"
         confirm_button = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.ID, "confirm-button"))
         )
-        assert confirm_button.is_displayed(), "El botón de confirmar eliminación no se muestra"
+        assert (
+            confirm_button.is_displayed()
+        ), "El botón de confirmar eliminación no se muestra"
         confirm_button.click()
 
         # Verificar que el diálogo se cierra

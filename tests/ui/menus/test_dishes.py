@@ -238,7 +238,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verifica que la página de platos carga correctamente",
         expected_result="La página de platos se carga sin errores",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-001",
     )
     @pytest.mark.order(7)
@@ -255,7 +255,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar la creación del botón de agregar plato",
         expected_result="El botón de agregar plato debe estar visible y funcional",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-002",
     )
     @pytest.mark.order(8)
@@ -339,7 +339,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar que el plato es visible en la tabla después de agregarlo",
         expected_result="El plato debe aparecer en la tabla de platos",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-003",
     )
     @pytest.mark.order(9)
@@ -357,7 +357,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar funcionalidad de validación del formulario de platos",
         expected_result="El formulario debe mostrar errores cuando los campos requeridos están vacíos",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-004",
     )
     @pytest.mark.order(10)
@@ -394,7 +394,7 @@ class TestDishesUI:
     @add_test_info(
         description="Verificar que los botones de activar/desactivar platos funcionan correctamente",
         expected_result="Los botones de activar/desactivar deben cambiar el estado del plato",
-        module="Menús - UI",
+        module="UI",
         test_id="DISHES-UI-005",
     )
     @pytest.mark.order(11)
